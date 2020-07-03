@@ -2,7 +2,7 @@ using namespace ROOT;
 
 int analyse(TString source, TString out, TString generator){
 
-#include "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/mag_over5/constants.h"
+#include "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/constants.h"
 
 TChain T("T");
 T.Add(Form("%s", source.Data())); // Adding source file

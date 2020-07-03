@@ -116,7 +116,7 @@ TGraphErrors plot(TString gen, TString metric, TString p_type, TString p_nrg, In
 
 
 Int_t integrate(TString generator){
-    #include "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/mag_over5/constants.h"
+    #include "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/constants.h"
     
     TFile f("int_rate.root", "RECREATE");
     std::cout << generator << std::endl;
