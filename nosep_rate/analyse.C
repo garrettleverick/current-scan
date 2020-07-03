@@ -37,7 +37,7 @@ for(Int_t j=0; j<n_sector+1; j++){
                 part= Form("%s_%s_%d_%d", p_type[l].Data(), p_nrg[m].Data(), j, k);
 //                    std::cout<< part<< std::endl;
           
-                h[part]=new TH1D(part, Form("%s rate, Generator=%s, Rrange= [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 400, Rmin[k], Rmax[k]);
+                h[part]=new TH1D(part, Form("%s rate, Generator=%s, Rrange= [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 172, Rmin[k], Rmax[k]);
                 
                 /*
                 h_fom[part]=new TH1D(part+"_fom", Form("%s rate, Generator=%s, Rrange= [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 400, Rmin[k], Rmax[k]);
