@@ -28,15 +28,15 @@ Double_t addErrorInQuad(Float_t a, Float_t b, Float_t c){
 
 }
 
-TGraphErrors plot(TString gen, TString metric, TString p_type, TString p_nrg, Int_t sector, Int_t ring, std::vector<Double_t> scale){
+TGraphErrors plot(TString gen, TString metric, TString p_type, TString p_nrg, Int_t septant, Int_t sector, Int_t ring, std::vector<Double_t> scale){
 
     Double_t rmin;
     Double_t rmax;
 
     std::map<TString, TString> histname;
-    histname["rate"]=Form("%s_%s_%d_%d", p_type.Data(), p_nrg.Data(), sector, ring);
-    histname["asy"]= Form("%s_%s_%d_%d_asy", p_type.Data(), p_nrg.Data(), sector, ring);
-    histname["fom"]= Form("%s_%s_%d_%d_fom", p_type.Data(), p_nrg.Data(), sector, ring);
+    histname["rate"]=Form("%s_%s_%d_%d_%d", p_type.Data(), p_nrg.Data(), septant, sector, ring);
+    histname["asy"]= Form("%s_%s_%d_%d_%d_asy", p_type.Data(), p_nrg.Data(), septant, sector, ring);
+    histname["fom"]= Form("%s_%s_%d_%d_%d_fom", p_type.Data(), p_nrg.Data(), septant, sector, ring);
 
     std::vector<std::vector<Double_t>> rate_integral;
     std::vector<Double_t> off;
@@ -116,7 +116,7 @@ TGraphErrors plot(TString gen, TString metric, TString p_type, TString p_nrg, In
 
 
 Int_t integrate(TString generator){
-    #include "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/mag_over5/constants.h"
+    #include "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/constants.h"
     
     TFile f("int_rate.root", "RECREATE");
     std::cout << generator << std::endl;
@@ -126,16 +126,20 @@ Int_t integrate(TString generator){
             std::cout << p_type[p] << std::endl;
             for(Int_t q=0; q<p_nrg.size(); q++){ 
                 std::cout << p_nrg[q] << std::endl;
-                for(Int_t j=0; j<n_sector+1; j++){ 
-                    for(Int_t m=0; m<n_ring+1; m++){
-                        TGraphErrors g_err=plot(generator, metric[l], p_type[p], p_nrg[q], j, m, scale);
-                        f.cd();
-                        g_err.Write(Form("%s_%s_%s_%s_%d_%d", generator.Data(), metric[l].Data(), p_type[p].Data(), p_nrg[q].Data(), j, m), TObject::kOverwrite); 
+                for(Int_t k=0; k<n_septant; k++){
+                    std::cout << k+1 << std::endl;
+                    for(Int_t j=0; j<n_sector+1; j++){ 
+                        for(Int_t m=0; m<n_ring+1; m++){
+                            TGraphErrors g_err=plot(generator, metric[l], p_type[p], p_nrg[q], k+1, j, m, scale);
+                            f.cd();
+                            g_err.Write(Form("%s_%s_%s_%s_%d_%d_%d", generator.Data(), metric[l].Data(), p_type[p].Data(), p_nrg[q].Data(), k+1, j, m), TObject::kOverwrite); 
+                        }
                     }
                 }
             }
         }
-    }    
+    } 
+    
 
     f.Close();
     return 0;

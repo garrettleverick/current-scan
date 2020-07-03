@@ -1,5 +1,5 @@
 
-int plot_save(TString metric, Int_t sector, Int_t ring, std::vector<Int_t> colour, std::vector<Int_t> m_style, TFile *f, TCanvas *c, std::vector<Double_t> scale){
+int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vector<Int_t> colour, std::vector<Int_t> m_style, TFile *f, TCanvas *c, std::vector<Double_t> scale){
  
     TMultiGraph *mg = new TMultiGraph(); 
 
@@ -27,7 +27,7 @@ int plot_save(TString metric, Int_t sector, Int_t ring, std::vector<Int_t> colou
         for(Int_t j=0; j<graphs[i][0].size(); j++){
             for(Int_t k=0; k<graphs[i][1].size(); k++){
                 for(Int_t l=0; l<graphs[i][2].size(); l++){
-                    TString g_name = Form("%s_%s_%s_%s_%d_%d", graphs[i][0][j].Data(), metric.Data(), graphs[i][1][k].Data(), graphs[i][2][l].Data(), sector, ring);
+                    TString g_name = Form("%s_%s_%s_%s_%d_%d_%d", graphs[i][0][j].Data(), metric.Data(), graphs[i][1][k].Data(), graphs[i][2][l].Data(), septant, sector, ring);
 //                    std::cout << g_name << std::endl;
                     TGraphErrors *g1 = (TGraphErrors*) f->Get(g_name);
                     tmp_y_val = g1->GetY();
@@ -60,13 +60,13 @@ int plot_save(TString metric, Int_t sector, Int_t ring, std::vector<Int_t> colou
     
     }
                         
-    mg->SetTitle(Form("%s vs Scale, Sector: %d, Ring: %d; Magnetic Field Scaling Factor; Rate [GHz]", metric.Data(), sector, ring)); 
+    mg->SetTitle(Form("%s vs Scale, Septant: %d, Sector: %d, Ring: %d; Magnetic Field Scaling Factor; Rate [GHz]", metric.Data(), septant, sector, ring)); 
     mg->GetXaxis()->CenterTitle(1);
     mg->GetYaxis()->CenterTitle(1);
     mg->GetXaxis()->SetLimits(0.65, 1.35);
     mg->Draw("AP");
     
-    TString out_name = Form("%s_%d_%d", metric.Data(), sector, ring);
+    TString out_name = Form("%s_%d_%d_%d", metric.Data(), septant, sector, ring);
 
     c->Update(); 
     c->BuildLegend(0.7, 0.1, 0.25, 0.9);
@@ -96,16 +96,18 @@ int multi_g_add(){
 
     //loop over each TMultiGraph you want to make
     for(Int_t l=0; l<metric.size(); l++){
-        for(Int_t m=0; m<n_ring+1; m++){
-            if(m!=5 && m!=0){
-                for(Int_t k=0; k<n_not_sector5+1; k++){
-                    plot_save(metric[l], j+1, k, m, colour, m_style, f, c, scale);
-                }
-            } else{
-                for(Int_t k=0; k<n_sector+1; k++){//swtich this to 0 once formatting corected
-                    plot_save(metric[l], j+1, k, m, colour, m_style, f, c, scale);
-                }
-            } 
+        for(Int_t j=0; j<n_septant; j++){
+            for(Int_t m=0; m<n_ring+1; m++){
+                if(m!=5 && m!=0){
+                    for(Int_t k=0; k<n_not_sector5+1; k++){
+                        plot_save(metric[l], j+1, k, m, colour, m_style, f, c, scale);
+                    }
+                } else{
+                    for(Int_t k=0; k<n_sector+1; k++){//swtich this to 0 once formatting corected
+                        plot_save(metric[l], j+1, k, m, colour, m_style, f, c, scale);
+                    }
+                } 
+            }
         }
     }
 
