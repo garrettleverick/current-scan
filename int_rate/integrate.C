@@ -14,9 +14,9 @@ std::vector<Double_t> integral(TH1D* h, Double_t xmin, Double_t xmax){
     integral -= h->GetBinContent(bmin)*(xmin-axis->GetBinLowEdge(bmin))/axis->GetBinWidth(bmin); //why divide by bin width
     integral -= h->GetBinContent(bmax)*(axis->GetBinUpEdge(bmax)-xmax)/axis->GetBinWidth(bmax);
 
-    sum.push_back(65*7*integral); //sim uses 85 uA, here is 65, why (changed June 5)
-    sum.push_back(65*7*error);  //here is also where we multiply by 7 again so our units are nice
-
+    sum.push_back(65*integral); //sim uses 85 uA, here is 65, why (changed June 5)
+    sum.push_back(65*error);  //here is also where we multiply by 7 again so our units are nice
+//got rid of the *7
 
     return sum;
 }
