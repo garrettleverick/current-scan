@@ -86,7 +86,7 @@ for (size_t j=0;j< nEvents;j++){
         
         std::map<TString, Bool_t> hit_type = {
             {"all", 1},
-            {"primary", hit.trid<=prim_track},
+            {"primary", hit.vz<=-3875 && hit.pid==11},
             {"electron", hit.trid>prim_track && hit.pid==11},
             {"positron", hit.trid>prim_track && hit.pid==-11},
             {"photon", hit.trid>prim_track && hit.pid==22},
