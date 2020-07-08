@@ -40,7 +40,7 @@ off_septant.push_back((3.0-1.0*i)*size_septant);
 //                    std::cout<< part<< std::endl;
               
                     h[part]=new TH1D(part, Form("%s rate, Generator=%s, Rrange= [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 400, Rmin[k], Rmax[k]);
-                    
+/*                    
                     h_fom[part]=new TH1D(part+"_fom", Form("%s rate, Generator=%s, Rrange= [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 400, Rmin[k], Rmax[k]);
 
                     if(generator=="moller"){
@@ -52,7 +52,7 @@ off_septant.push_back((3.0-1.0*i)*size_septant);
                     }else{
                         h_asy[part] = new TH1D(part+"_asy", Form("%s asy, Generator=%s, Rrange=  [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 400, -2000, 0);
                     }
-                }
+*/              }
             }        
         } 
     }
@@ -65,6 +65,13 @@ T.SetBranchAddress("ev", &fEvent);//what is likely happening here is SetBranchAd
 T.SetBranchAddress("hit", &fHit);
 T.SetBranchAddress("rate", &fRate);
 
+Int_t prim_track=0; // maximum track of primary
+if(generator=="moller"){
+    prim_track=2;
+} else{
+    prim_track=1;
+}
+
 //going through the data
 for (size_t j=0;j< nEvents;j++){
     T.GetEntry(j);
@@ -76,19 +83,19 @@ for (size_t j=0;j< nEvents;j++){
         remollGenericDetectorHit_t hit=fHit->at(i);
        
         Bool_t hit_planedet = hit.det==28 ; 
-        Int_t prim_track=0; // maximum track of primary
-        if (generator=="moller"){
-            prim_track=2;
-        } 
-        else{
-            prim_track=1;
+
+        if(!hit_planedet || hit.r<Rmin[0] || hit.r>Rmax[0]) { continue; }
+
+        Bool_t primary_cond;
+        if(generator=="beam"){
+            primary_cond = hit.vz<=-3875 && hit.pid==11;
+        } else{
+            primary_cond = hit.trid<=prim_track;
         }
-        
-        if (!hit_planedet || hit.r<Rmin[0] || hit.r>Rmax[0]) { continue; }
-        
+
         std::map<TString, Bool_t> hit_type = {
             {"all", 1},
-            {"primary", hit.trid<=prim_track},
+            {"primary", primary_cond},
             {"electron", hit.trid>prim_track && hit.pid==11},
             {"positron", hit.trid>prim_track && hit.pid==-11},
             {"photon", hit.trid>prim_track && hit.pid==22},
@@ -168,8 +175,8 @@ for (size_t j=0;j< nEvents;j++){
                             part= Form("%s_%s_%d_%d_%d", p_type[l].Data(), p_nrg[m].Data(), i+1, j, k);
                             if (hit_pid[part]){                             
                                 h[part]->Fill(hit.r, (fRate)*weight);
-                                h_fom[part]->Fill(hit.r, (fRate)*(fEvent->A)*(fEvent->A)*weight);                
-                                h_asy[part]->Fill(fEvent->A, fRate*weight);
+//                                h_fom[part]->Fill(hit.r, (fRate)*(fEvent->A)*(fEvent->A)*weight);                
+//                                h_asy[part]->Fill(fEvent->A, fRate*weight);
                             }
                         }
                     }
@@ -188,8 +195,8 @@ for (Int_t i=0; i<n_septant; i++){
                     part= Form("%s_%s_%d_%d_%d", p_type[l].Data(), p_nrg[m].Data(), i+1, j, k);
                     //std::cout<< part << std::endl;
                     h[part]->Write("", TObject::kOverwrite); 
-                    h_fom[part]->Write("", TObject::kOverwrite);
-                    h_asy[part]->Write("", TObject::kOverwrite);
+//                    h_fom[part]->Write("", TObject::kOverwrite);
+//                    h_asy[part]->Write("", TObject::kOverwrite);
                 }
             }
         } 

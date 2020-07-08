@@ -18,7 +18,7 @@ Int_t collect(){
     TF2 *inelastic_mult = new TF2("inelastic_mult", "y", 0.0, 1.0, 0.0, 2000.0);
 
     for(Int_t g=0; g<gen.size(); g++){
-        in_name = Form("%s/analysis/mag_over4/int_data/%s_int.root", file_stem.Data(), gen[g].Data());
+        TString in_name = Form("%s/mag_over10M/int_data/%s.root", file_stem.Data(), gen[g].Data());
         TFile *f = new TFile(in_name);
         for(Int_t m=0; m<metric.size(); m++){
             for(Int_t p=0; p<p_type.size(); p++){

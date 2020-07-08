@@ -5,10 +5,11 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
 
     std::vector<std::vector<std::vector<TString>>> graphs;
     //graphs.push_back({{list of gen}, {list of p_type}, {list of p_nrg}, {title}, {scale}}); is the format
-    graphs.push_back({{"moller"}, {"primary", "secondary"}, {"gt_1"}, {"moller_all_>1MeV"}, {"1"}});
-    graphs.push_back({{"elastic"}, {"primary", "secondary"}, {"gt_1"}, {"elastic_all_>1MeV"}, {"1"}});
-    graphs.push_back({{"inelastic"}, {"primary", "secondary"}, {"gt_1"}, {"inelastic_all_>1MeV"}, {"10"}});
-    graphs.push_back({{"elastic", "moller", "inelastic"}, {"primary", "secondary"}, {"gt_1"}, {"all_all_>1MeV"}, {"1"}});
+    graphs.push_back({{"moller"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"moller_prim_>1MeV"}, {"1"}});
+    graphs.push_back({{"elastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"elastic_prim_>1MeV"}, {"1"}});
+    graphs.push_back({{"inelastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"inelastic_prim_>1MeV"}, {"10"}});
+    graphs.push_back({{"elastic", "moller", "inelastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"all_prim_>1MeV"}, {"1"}});
+    graphs.push_back({{"beam"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam_prim_>1MeV"}, {"1"}});
 
     TString title;
 
@@ -69,8 +70,8 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
     TString out_name = Form("%s_%d_%d_%d", metric.Data(), septant, sector, ring);
 
     c->Update(); 
-    c->BuildLegend(0.7, 0.1, 0.25, 0.9);
-//    c->Print(Form("out/%s.png", out_name.Data()));
+    c->BuildLegend(0.7, 0.1, 0.9, 0.25);
+    c->Print(Form("curscan_prims_w_newbeam/%s.png", out_name.Data()));
 
 //    f_out.cd();
     mg->Write(out_name);
@@ -81,7 +82,7 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
 
 int multi_g_add(){
     #include "../constants.h"
-    TFile *f = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/mag_over10M/processed1_1/collect.root");
+    TFile *f = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/collect.root");
     TFile f_out("multi_g_add.root", "RECREATE");   
     
     std::vector<Int_t> colour;
