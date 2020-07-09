@@ -18,7 +18,7 @@ Int_t collect(){
     TF2 *inelastic_mult = new TF2("inelastic_mult", "y", 0.0, 1.0, 0.0, 2000.0);
 
     for(Int_t g=0; g<gen.size(); g++){
-        in_name = Form("%s/analysis/current-scan/int_data/%s_int.root", file_stem.Data(), gen[g].Data());
+        TString in_name = Form("%s/analysis/current-scan/int_data/%s.root", file_stem.Data(), gen[g].Data());
         TFile *f = new TFile(in_name);
         for(Int_t m=0; m<metric.size(); m++){
             for(Int_t p=0; p<p_type.size(); p++){
@@ -32,7 +32,7 @@ Int_t collect(){
                                 for(Int_t j=0; j<ring_non5[i].size(); j++){//go through the subsectors and add the rates and errors
                                     TString g_name = Form("%s_%s_%s_%s_%d_%d", gen[g].Data(), metric[m].Data(), p_type[p].Data(), p_nrg[q].Data(), ring_non5[i][j], r);
                                     TGraphErrors *g1 = (TGraphErrors*) f->Get(g_name);
-//                                        std::cout << g_name << std::endl;
+                                    //std::cout << g_name << std::endl;
                                     Double_t * tmp_rate = g1->GetY();
                                     Double_t * tmp_rate_err = g1->GetEY();
                                     if (gen[g]=="inelastic"){//relic of old code
@@ -58,7 +58,7 @@ Int_t collect(){
                         } else{
                             for(Int_t i=0; i<n_sector+1; i++){
                                 TString g_name = Form("%s_%s_%s_%s_%d_%d", gen[g].Data(), metric[m].Data(), p_type[p].Data(), p_nrg[q].Data(), i, r);
-//                                    std::cout << g_name << std::endl;
+                                //std::cout << g_name << std::endl;
                                 TGraphErrors *g1 = (TGraphErrors*) f->Get(g_name);
 //                                    if(gen[g]=="inelastic"){
 //                                        g1->Apply(inelastic_mult);

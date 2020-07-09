@@ -5,10 +5,10 @@ int plot_save(TString metric, Int_t sector, Int_t ring, std::vector<Int_t> colou
 
     std::vector<std::vector<std::vector<TString>>> graphs;
     //graphs.push_back({{list of gen}, {list of p_type}, {list of p_nrg}, {title}, {scale}}); is the format
-    graphs.push_back({{"moller"}, {"primary", "secondary"}, {"gt_1"}, {"moller_all_>1MeV"}, {"1"}});
-    graphs.push_back({{"elastic"}, {"primary", "secondary"}, {"gt_1"}, {"elastic_all_>1MeV"}, {"1"}});
-    graphs.push_back({{"inelastic"}, {"primary", "secondary"}, {"gt_1"}, {"inelastic_all_>1MeV"}, {"10"}});
-    graphs.push_back({{"elastic", "moller", "inelastic"}, {"primary", "secondary"}, {"gt_1"}, {"all_all_>1MeV"}, {"1"}});
+    graphs.push_back({{"moller"}, {"primary"}, {"gte_1000"}, {"moller_prim_>100MeV"}, {"1"}});
+    graphs.push_back({{"elastic"}, {"primary"}, {"gte_1000"}, {"elastic_prim_>100MeV"}, {"1"}});
+    graphs.push_back({{"elastic", "moller"}, {"primary"}, {"gte_1000"}, {"phys_prim_>100MeV"}, {"1"}});
+    graphs.push_back({{"beam"}, {"primary"}, {"gte_1000"}, {"beam_prim_>100MeV"}, {"1"}});
 
     TString title;
 
@@ -43,15 +43,9 @@ int plot_save(TString metric, Int_t sector, Int_t ring, std::vector<Int_t> colou
                 }
             }
         }   
+        
         TGraphErrors *g_out = new TGraphErrors(scale.size(), &scale[0], &y_val[0], &scale_err[0], &y_err[0]);
         title = Form("%s X %s", graphs[i][3][0].Data(), graphs[i][4][0].Data());
-/*
-        if (graphs[i][0][0]=="inelastic"){
-            title = Form("%s_%s_%s X10", graphs[i][0][0].Data(), graphs[i][1][0].Data(), graphs[i][2][0].Data());
-        } else{
-            title = Form("%s_%s_%s", graphs[i][0][0].Data(), graphs[i][1][0].Data(), graphs[i][2][0].Data());
-        }
-*/
         g_out->SetTitle(title);
         g_out->SetMarkerColor(colour[i]);
         g_out->SetLineColor(colour[i]);
@@ -81,13 +75,10 @@ int plot_save(TString metric, Int_t sector, Int_t ring, std::vector<Int_t> colou
 
 int multi_g_add(){
     #include "../constants.h"
-    TFile *f = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/mag_over10M/processed1_1/collect.root");
+    TFile *f = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/collect.root");
     TFile f_out("multi_g_add.root", "RECREATE");   
     
-    std::vector<Int_t> colour;
-    for(Int_t i=2; i<10; i++){
-        colour.push_back(i);
-    }
+    std::vector<Int_t> colour = {1, 2, 3, 4, 6, 48};
     std::vector<Int_t> m_style = {20, 21, 22, 23, 29, 33, 43, 31, 34};
 
     TCanvas *c = new TCanvas("c", "c", 800, 600);
@@ -99,11 +90,11 @@ int multi_g_add(){
         for(Int_t m=0; m<n_ring+1; m++){
             if(m!=5 && m!=0){
                 for(Int_t k=0; k<n_not_sector5+1; k++){
-                    plot_save(metric[l], j+1, k, m, colour, m_style, f, c, scale);
+                    plot_save(metric[l], k, m, colour, m_style, f, c, scale);
                 }
             } else{
-                for(Int_t k=0; k<n_sector+1; k++){//swtich this to 0 once formatting corected
-                    plot_save(metric[l], j+1, k, m, colour, m_style, f, c, scale);
+                for(Int_t k=0; k<n_sector+1; k++){
+                    plot_save(metric[l], k, m, colour, m_style, f, c, scale);
                 }
             } 
         }

@@ -63,6 +63,13 @@ T.SetBranchAddress("ev", &fEvent);//what is likely happening here is SetBranchAd
 T.SetBranchAddress("hit", &fHit);
 T.SetBranchAddress("rate", &fRate);
 
+Int_t prim_track=0; // maximum track of primary
+if (generator=="moller"){
+    prim_track=2;
+} else{
+    prim_track=1;
+}
+
 //going through the data
 for (size_t j=0;j< nEvents;j++){
     T.GetEntry(j);
@@ -73,20 +80,20 @@ for (size_t j=0;j< nEvents;j++){
         } 
         remollGenericDetectorHit_t hit=fHit->at(i);
        
-        Bool_t hit_planedet = hit.det==28 ; 
-        Int_t prim_track=0; // maximum track of primary
-        if (generator=="moller"){
-            prim_track=2;
-        } 
-        else{
-            prim_track=1;
-        }
+        Bool_t hit_planedet = hit.det==28; 
         
         if (!hit_planedet || hit.r<Rmin[0] || hit.r>Rmax[0]) { continue; }
         
+        Bool_t prim_condition;
+        if(generator=="beam"){
+            prim_condition = hit.vz<=-3875 && hit.pid=11;
+        } else{
+            prim_condition = hit.trid<=prim_track;
+        }
+
         std::map<TString, Bool_t> hit_type = {
             {"all", 1},
-            {"primary", hit.vz<=-3875 && hit.pid==11},
+            {"primary", prim_condition},
             {"electron", hit.trid>prim_track && hit.pid==11},
             {"positron", hit.trid>prim_track && hit.pid==-11},
             {"photon", hit.trid>prim_track && hit.pid==22},

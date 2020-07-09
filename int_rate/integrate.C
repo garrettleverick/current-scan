@@ -49,7 +49,7 @@ TGraphErrors plot(TString gen, TString metric, TString p_type, TString p_nrg, In
 
 
     for(Int_t i=0;i < scale.size(); i++){ 
-        TString source_file = Form("/home/garrettl/projects/rrg-jmammei/garrettl/mag_over10M/tile_data3/%.3f/%s/%s.root", scale[i], gen.Data(), gen.Data()); 
+        TString source_file = Form("/home/garrettl/projects/rrg-jmammei/garrettl/mag_over10M/beam_prims/beamvphys5mm/%.3f/%s/%s.root", scale[i], gen.Data(), gen.Data()); 
         source.push_back(new TFile(source_file));
         TH1D *h_rate=(TH1D*) source[i]->Get(histname[metric]);
         rmin = h_rate->GetXaxis()->GetXmin(); 
@@ -116,7 +116,7 @@ TGraphErrors plot(TString gen, TString metric, TString p_type, TString p_nrg, In
 
 
 Int_t integrate(TString generator){
-    #include "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/mag_over5/constants.h"
+    #include "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/constants.h"
     
     TFile f("int_rate.root", "RECREATE");
     std::cout << generator << std::endl;
