@@ -44,15 +44,9 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
                 }
             }
         }   
+        
         TGraphErrors *g_out = new TGraphErrors(scale.size(), &scale[0], &y_val[0], &scale_err[0], &y_err[0]);
         title = Form("%s X %s", graphs[i][3][0].Data(), graphs[i][4][0].Data());
-/*
-        if (graphs[i][0][0]=="inelastic"){
-            title = Form("%s_%s_%s X10", graphs[i][0][0].Data(), graphs[i][1][0].Data(), graphs[i][2][0].Data());
-        } else{
-            title = Form("%s_%s_%s", graphs[i][0][0].Data(), graphs[i][1][0].Data(), graphs[i][2][0].Data());
-        }
-*/
         g_out->SetTitle(title);
         g_out->SetMarkerColor(colour[i]);
         g_out->SetLineColor(colour[i]);
@@ -85,10 +79,7 @@ int multi_g_add(){
     TFile *f = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/collect.root");
     TFile f_out("multi_g_add.root", "RECREATE");   
     
-    std::vector<Int_t> colour;
-    for(Int_t i=2; i<10; i++){
-        colour.push_back(i);
-    }
+    std::vector<Int_t> colour = {1, 2, 3, 4, 6, 46};
     std::vector<Int_t> m_style = {20, 21, 22, 23, 29, 33, 43, 31, 34};
 
     TCanvas *c = new TCanvas("c", "c", 800, 600);

@@ -25,7 +25,7 @@ Int_t collect(){
                 for(Int_t q=0; q<p_nrg.size(); q++){
                     for(Int_t s=0; s<n_septant; s++){
                         for(Int_t r=0; r<n_ring+1; r++){
-                            if (r!=0 && r!=5){
+                            if(r!=0 && r!=5){
                                 for(Int_t i=0; i<ring_non5.size(); i++){//for each of the 5 sectors
                                     std::vector<Double_t> rate(scale.size(), 0.0);
                                     std::vector<Double_t> rate_qerr(scale.size(), 0.0);
@@ -36,7 +36,7 @@ Int_t collect(){
 //                                        std::cout << g_name << std::endl;
                                         Double_t * tmp_rate = g1->GetY();
                                         Double_t * tmp_rate_err = g1->GetEY();
-                                        if (gen[g]=="inelastic"){//relic of old code
+                                        if(gen[g]=="inelastic"){//relic of old code
                                             for(Int_t k=0; k<scale.size(); k++){
                                                 rate[k] += tmp_rate[k];//in order to show up well on the mg, the inelastics must be X10
                                                 rate_qerr[k] += tmp_rate_err[k]*tmp_rate_err[k];

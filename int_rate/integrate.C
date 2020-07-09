@@ -78,28 +78,7 @@ TGraphErrors plot(TString gen, TString metric, TString p_type, TString p_nrg, In
     //TCanvas c("c", "c", 800, 600);
 
     TGraphErrors graph(scale.size(), &scale[0], &rate[0],  &off_error[0], &rate_error[0]); 
-/*   
-    graph.SetTitle(Form("%s vs Scale, Gen: %s, Septant: %d, Sector: %s, Ring: %d", metric.Data(), gen.Data(), septant, sector.Data(), ring));
-    graph.GetXaxis()->SetTitle("Magnetic Field Scaling Factor");
-    graph.GetXaxis()->CenterTitle(1);
-    graph.GetYaxis()->SetTitle("Rate [GHz/#muA]");
-    graph.GetYaxis()->CenterTitle(1);
-    if (gen=="moller"){
-        graph.SetMarkerStyle(22);
-        graph.SetMarkerColor(2);  
-    } else if (gen=="elastic"){ 
-        graph.SetMarkerStyle(23);
-        graph.SetMarkerColor(3);
-    } else if (gen=="inelastic"){ 
-        graph.SetMarkerStyle(21);
-        graph.SetMarkerColor(4);  
-    } else{ 
-        graph.SetMarkerStyle(20);
-        graph.SetMarkerColor(6);  
-    }
 
-    graph.Draw("AP");
-*/
     //graph.Fit("pol1");
     //gPad->Update();
     //TPaveStats *st = (TPaveStats*)graph.FindObject("stats");
