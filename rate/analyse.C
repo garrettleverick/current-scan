@@ -64,6 +64,10 @@ std::vector<remollGenericDetectorHit_t>  *fHit=0;
 T.SetBranchAddress("ev", &fEvent);//what is likely happening here is SetBranchAddress is passing out the address as a pointer
 T.SetBranchAddress("hit", &fHit);
 T.SetBranchAddress("rate", &fRate);
+        
+if(generator=="beam"){
+    fRate=1.0;
+} 
 
 Int_t prim_track=0; // maximum track of primary
 if(generator=="moller"){
@@ -76,10 +80,10 @@ if(generator=="moller"){
 for (size_t j=0;j< nEvents;j++){
     T.GetEntry(j);
     std::cout << j << std::endl;
+    if(generator=="beam"){
+        for(size_t k=0;
     for (size_t i=0;i<fHit->size();i++){
-        if(generator=="beam"){
-            fRate=1.0;
-        } 
+
         remollGenericDetectorHit_t hit=fHit->at(i);
        
         Bool_t hit_planedet = hit.det==28 ; 
@@ -136,9 +140,9 @@ for (size_t j=0;j< nEvents;j++){
 
         Int_t ring=0;
         Double_t rad=hit.r;
-        for(Int_t i=1; i<n_ring+1; i++){ //starts at 1 to skip 0 (which is all)
-            if (rad<Rmax[i] && rad>=640.0){
-                ring = i;
+        for(Int_t r=1; r<n_ring+1; r++){ //starts at 1 to skip 0 (which is all)
+            if (rad<Rmax[r] && rad>=640.0){
+                ring = r;
                 break;
             }
         }
