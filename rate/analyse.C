@@ -39,7 +39,8 @@ off_septant.push_back((3.0-1.0*i)*size_septant);
                     part= Form("%s_%s_%d_%d_%d", p_type[l].Data(), p_nrg[m].Data(), i+1, j, k);
 //                    std::cout<< part<< std::endl;
               
-                    h[part]=new TH1D(part, Form("%s rate, Generator=%s, Rrange= [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 400, Rmin[k], Rmax[k]);
+                    //h[part]=new TH1D(part, Form("%s rate, Generator=%s, Rrange= [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 400, Rmin[k], Rmax[k]);
+                    h[part]=new TH1D(part, Form("%s rate, Generator=%s", part.Data(), generator.Data()), 400, 0, 1500);
 /*                    
                     h_fom[part]=new TH1D(part+"_fom", Form("%s rate, Generator=%s, Rrange= [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 400, Rmin[k], Rmax[k]);
 
@@ -65,9 +66,7 @@ T.SetBranchAddress("ev", &fEvent);//what is likely happening here is SetBranchAd
 T.SetBranchAddress("hit", &fHit);
 T.SetBranchAddress("rate", &fRate);
         
-if(generator=="beam"){
-    fRate=1.0;
-} 
+
 
 Int_t prim_track=0; // maximum track of primary
 if(generator=="moller"){
@@ -76,19 +75,52 @@ if(generator=="moller"){
     prim_track=1;
 }
 
-//going through the data
-for (size_t j=0;j< nEvents;j++){
-    T.GetEntry(j);
-    std::cout << j << std::endl;
-    if(generator=="beam"){
-        for(size_t k=0;
-    for (size_t i=0;i<fHit->size();i++){
+Float_t acceptance_angle = 0.1;
+Float_t acceptance_rad = 30;
+std::vector<Int_t> good_track;
+Int_t display_percent = 1;
 
+//going through the data
+for (size_t event=0; event<nEvents; event++){
+    T.GetEntry(event);
+    
+    Float_t percent = float(event+1)/nEvents*100;
+    
+    if(percent > display_percent){
+        cout<< display_percent <<endl;
+        display_percent+=1;
+    }
+    
+    if(generator=="beam"){
+        for(size_t k=0; k<fHit->size(); k++){
+            remollGenericDetectorHit_t hit = fHit->at(k);
+            if(hit.det!=27){continue;}
+            Float_t rad = hit.r;
+//            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.z);
+            if(rad < acceptance_rad && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
+                good_track.push_back(hit.trid);
+            }
+        }
+    }
+
+    for(size_t i=0; i<fHit->size(); i++){
         remollGenericDetectorHit_t hit=fHit->at(i);
        
-        Bool_t hit_planedet = hit.det==28 ; 
+        if(hit.det!=28){
+            continue;
+        }else {
+            if(hit.r<Rmin[0] || hit.r>Rmax[0]){continue;}
+        }
 
-        if(!hit_planedet || hit.r<Rmin[0] || hit.r>Rmax[0]) { continue; }
+        std::vector<int>::iterator it;
+        if(generator=="beam"){
+            it = find(good_track.begin(), good_track.end(), hit.trid);
+            if(it==good_track.end()){continue;}
+        }
+        
+        if(generator=="beam"){
+            fRate=1.0;
+        }
 
         Bool_t primary_cond;
         if(generator=="beam"){
