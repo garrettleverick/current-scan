@@ -2,6 +2,7 @@ using namespace ROOT;
 
 int analyse(TString source, TString out, TString generator){
 
+//the particle type and energy partitions are stored in constants.h
 #include "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/constants.h"
 
 TChain T("T");
@@ -9,11 +10,12 @@ T.Add(Form("%s", source.Data())); // Adding source file
 Int_t nEvents = T.GetEntries();  // Number of primary events
 std::cout << "Analyzing "<< nEvents << " events" << std::endl;
 
-Double_t weight= 0.0;
+Double_t weight= 0.0; //the weighting is different based on the generator
 if(generator=="beam"){
     weight=1.0/(nEvents*1.602*1e-4*7);
 } else{
-    weight=1e-9/85/7; // Divide by current and number of septants. So, the Y-axis gets units of GHz/uA/sep. 
+    weight=1e-9/85/7; 
+    // Divide by current and number of septants. So, the Y-axis gets units of GHz/uA/sep. 
 }
 
 TFile f(Form("%s", out.Data()), "RECREATE");
@@ -22,14 +24,16 @@ std::map<TString, TH1D*> h;
 std::map<TString, TH1D*> h_fom;
 std::map<TString, TH1D*> h_asy;
 
-Double_t size_septant=2.0*TMath::Pi()/n_septant;
+Double_t size_septanti = 2.0*TMath::Pi()/n_septant;
 std::vector<Double_t> off_septant;
 TString part;
 
-Float_t Rmin []= {640.0, 640.0, 680.0, 720.0, 785.0, 875.0, 1035.0, 1200.0}; //can be made into array so each sector's radii may be different
+//Radii of rings
+//can be made into array so each sector's radii may be different
+Float_t Rmin []= {640.0, 640.0, 680.0, 720.0, 785.0, 875.0, 1035.0, 1200.0}; 
 Float_t Rmax []= {1500.0, 680.0, 720.0, 785.0, 875.0, 1035.0, 1140.0, 1500.0};
 
-//Setting up histograms
+//Setting up histograms, 
 for(Int_t i=0; i<n_septant; i++){
 off_septant.push_back((3.0-1.0*i)*size_septant);
     for(Int_t j=0; j<n_sector+1; j++){
@@ -37,11 +41,9 @@ off_septant.push_back((3.0-1.0*i)*size_septant);
             for(Int_t l=0; l<p_type.size(); l++){
                 for(Int_t m=0; m<p_nrg.size(); m++){
                     part= Form("%s_%s_%d_%d_%d", p_type[l].Data(), p_nrg[m].Data(), i+1, j, k);
-//                    std::cout<< part<< std::endl;
-              
-                    //h[part]=new TH1D(part, Form("%s rate, Generator=%s, Rrange= [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 400, Rmin[k], Rmax[k]);
+//                    std::cout<< part<< std::endl; 
                     h[part]=new TH1D(part, Form("%s rate, Generator=%s", part.Data(), generator.Data()), 400, Rmin[k], Rmax[k]);
-/*                    
+/* not worrying about asym or figure of merit right now 
                     h_fom[part]=new TH1D(part+"_fom", Form("%s rate, Generator=%s, Rrange= [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 400, Rmin[k], Rmax[k]);
 
                     if(generator=="moller"){
@@ -62,22 +64,23 @@ off_septant.push_back((3.0-1.0*i)*size_septant);
 Double_t fRate=0;
 remollEvent_t *fEvent=0;
 std::vector<remollGenericDetectorHit_t>  *fHit=0;
-T.SetBranchAddress("ev", &fEvent);//what is likely happening here is SetBranchAddress is passing out the address as a pointer
+T.SetBranchAddress("ev", &fEvent); //getting (the locations of) fEvent, fHit, and fRate from raw data. An event is a stack of hits
 T.SetBranchAddress("hit", &fHit);
 T.SetBranchAddress("rate", &fRate);
         
 
 
-Int_t prim_track=0; // maximum track of primary
+Int_t prim_track=0; // maximum track of primary, we can't tell which moller e- is the original so they are both given trid 2
 if(generator=="moller"){
     prim_track=2;
 } else{
     prim_track=1;
 }
 
-Float_t acceptance_angle = 0.1;
+//Initialise variables for processing the data
 Float_t acceptance_rad = 30; //mm
-std::vector<Int_t> good_track;
+std::vector<Int_t> good_track; 
+//^ is where tracks we want to keep are stored. The first loop finds the good tracks, the second loop find the hits on the main detector with said tracks
 Int_t display_percent = 1;
 std::vector<int>::iterator iter;
 
@@ -86,7 +89,6 @@ for (size_t event=0; event<nEvents; event++){
     T.GetEntry(event);
     
     Float_t percent = float(event+1)/nEvents*100;
-    
     if(percent > display_percent){
         std::cout << display_percent << std::endl;
         display_percent+=1;
@@ -94,10 +96,11 @@ for (size_t event=0; event<nEvents; event++){
     
     good_track.clear();
 
+    //we want to keep secondaries from beam gen under a certain angle, and keep secondaries from physics above. Want all prims from physics
     if(generator=="beam"){
         for(size_t k=0; k<fHit->size(); k++){
             remollGenericDetectorHit_t hit = fHit->at(k);
-            if(hit.det!=27){continue;}
+            if(hit.det!=27){continue;} //ignore if hit is not at det 27 (z = 750)
             Float_t rad = hit.r;
 //            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.z);
             if(rad < acceptance_rad && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
@@ -119,14 +122,13 @@ for (size_t event=0; event<nEvents; event++){
     for(size_t i=0; i<fHit->size(); i++){
         remollGenericDetectorHit_t hit=fHit->at(i);
        
+        //continue if not a hit at det 28 or outside the main det radii
         if(hit.det!=28){
             continue;
         } else{
             if(hit.r<Rmin[0] || hit.r>Rmax[0]){continue;}
         }
 
-        //it.clear();
-        
         Bool_t primary_cond;
         if(generator=="beam"){
             iter = find(good_track.begin(), good_track.end(), hit.trid);
@@ -138,7 +140,6 @@ for (size_t event=0; event<nEvents; event++){
             primary_cond = hit.trid<=prim_track;
             if(iter==good_track.end() && not primary_cond){continue;}
         }
-
 /*        
         if(generator=="beam"){
             fRate=1.0;
@@ -150,6 +151,7 @@ for (size_t event=0; event<nEvents; event++){
             primary_cond = hit.trid<=prim_track;
         }
 */
+        //below are maps which evaluate the particle type and energy, these maps are called when filling the histograms
         std::map<TString, Bool_t> hit_type = {
             {"all", 1},
             {"primary", primary_cond},
@@ -171,7 +173,7 @@ for (size_t event=0; event<nEvents; event++){
             {"gte_1000", hit.p>=1000}
         };
 
-        //sectioning off the septant
+        //sectioning off the septant into 13 sectors
         Double_t sepdiv=2*TMath::Pi()/7.0;
         Int_t sec=0;
         Double_t phi=atan2(hit.y,hit.x);
@@ -191,6 +193,7 @@ for (size_t event=0; event<nEvents; event++){
         else if (secphi<23*TMath::Pi()/84.0) {sec=12;}   
         else {sec=13;}                                   
 
+        //sectioning off septant into 7 rings
         Int_t ring=0;
         Double_t rad=hit.r;
         for(Int_t r=1; r<n_ring+1; r++){ //starts at 1 to skip 0 (which is all)

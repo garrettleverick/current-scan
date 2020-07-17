@@ -25,15 +25,15 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
         std::fill(y_err.begin(), y_err.end(), 0.0); 
         std::fill(y_err_sq.begin(), y_err_sq.end(), 0.0); 
         Double_t scale_plot = graphs[i][4][0].Atof();
-        for(Int_t j=0; j<graphs[i][0].size(); j++){
-            for(Int_t k=0; k<graphs[i][1].size(); k++){
-                for(Int_t l=0; l<graphs[i][2].size(); l++){
+        for(Int_t j=0; j<graphs[i][0].size(); j++){ //loop through generators
+            for(Int_t k=0; k<graphs[i][1].size(); k++){ //type
+                for(Int_t l=0; l<graphs[i][2].size(); l++){ //energy
                     TString g_name = Form("%s_%s_%s_%s_%d_%d_%d", graphs[i][0][j].Data(), metric.Data(), graphs[i][1][k].Data(), graphs[i][2][l].Data(), septant, sector, ring);
 //                    std::cout << g_name << std::endl;
                     TGraphErrors *g1 = (TGraphErrors*) f->Get(g_name);
                     tmp_y_val = g1->GetY();
                     tmp_y_err = g1->GetEY();                    
-                    for(Int_t m=0; m<scale.size(); m++){
+                    for(Int_t m=0; m<scale.size(); m++){ //scale for viewing purposes
                         y_val[m] += scale_plot*tmp_y_val[m];
                         y_err_sq[m] += scale_plot*scale_plot*tmp_y_err[m]*tmp_y_err[m];
                     }
@@ -45,6 +45,7 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
             }
         }   
         
+        //name the graphs for the legend
         TGraphErrors *g_out = new TGraphErrors(scale.size(), &scale[0], &y_val[0], &scale_err[0], &y_err[0]);
         title = Form("%s X %s", graphs[i][3][0].Data(), graphs[i][4][0].Data());
         g_out->SetTitle(title);
@@ -65,7 +66,7 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
 
     c->Update(); 
     c->BuildLegend(0.7, 0.1, 0.9, 0.25);
-    c->Print(Form("curscan_prims_w_newbeam/%s.png", out_name.Data()));
+    c->Print(Form("curscan_prims_w_newbeam/%s.png", out_name.Data())); //make sure destniiation already exists
 
 //    f_out.cd();
     mg->Write(out_name);

@@ -6,16 +6,16 @@ std::vector<Double_t> integral(TH1D* h, Double_t xmin, Double_t xmax){
 
 
     TAxis *axis = h->GetXaxis();
-    Int_t bmin = axis->FindBin(xmin); //in your case xmin=-1.5, this meant for me (Garrett?)
-    Int_t bmax = axis->FindBin(xmax); //in your case xmax=0.8
+    Int_t bmin = axis->FindBin(xmin); 
+    Int_t bmax = axis->FindBin(xmax);
 
     Double_t error= 0;
     Double_t integral = h->IntegralAndError(bmin,bmax, error); // This is a slight over estimate of the error. But to our precision it shouldn't be noticeable. 
     integral -= h->GetBinContent(bmin)*(xmin-axis->GetBinLowEdge(bmin))/axis->GetBinWidth(bmin); //why divide by bin width
     integral -= h->GetBinContent(bmax)*(axis->GetBinUpEdge(bmax)-xmax)/axis->GetBinWidth(bmax);
 
-    sum.push_back(65*7*integral); //sim uses 85 uA, here is 65, why (changed June 5)
-    sum.push_back(65*7*error);  //here is also where we multiply by 7 again so our units are nice
+    sum.push_back(65*7*integral); 
+    sum.push_back(65*7*error);  //here is where we multiply by 7 and 65 again so our units are nice and we match the experiment current
 
 
     return sum;
@@ -49,13 +49,14 @@ TGraphErrors plot(TString gen, TString metric, TString p_type, TString p_nrg, In
 
 
     for(Int_t i=0;i < scale.size(); i++){ 
-        TString source_file = Form("/home/garrettl/projects/rrg-jmammei/garrettl/mag_over10M/tile_data3/%.3f/%s/%s.root", scale[i], gen.Data(), gen.Data()); 
+        //NOTE: Bevcareful, harcoded path! Also the way the file system is set up is important for these macros
+        TString source_file = Form("/home/garrettl/projects/rrg-jmammei/garrettl/current-scan_data/analysed_data/%.3f/%s/%s.root", scale[i], gen.Data(), gen.Data()); 
         source.push_back(new TFile(source_file));
         TH1D *h_rate=(TH1D*) source[i]->Get(histname[metric]);
         rmin = h_rate->GetXaxis()->GetXmin(); 
         rmax = h_rate->GetXaxis()->GetXmax();
         //rate_hs.Add(h_rate);
-        h_rate->Scale(1/100.0); //is the number of files
+        h_rate->Scale(1/100.0); //divide by the number of files within the folder
         rate_integral.push_back(integral(h_rate, rmin, rmax));  
         off.push_back(i);
         off_error.push_back(0);
@@ -93,7 +94,7 @@ TGraphErrors plot(TString gen, TString metric, TString p_type, TString p_nrg, In
     return graph;
 }
 
-
+//Should run using int_macro.py
 Int_t integrate(TString generator){
     #include "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/constants.h"
     
