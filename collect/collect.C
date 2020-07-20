@@ -16,7 +16,16 @@ Int_t collect(){
 
     std::vector<Double_t> scale_err(scale.size(), 0.0);
 
-    TF2 *mult = new TF2("mult", "y", 0.0, 1.0, 0.0, 2000.0); 
+    //scaling map
+    std::map<TString, std::map<TString, Float_t>> scaling = {
+        {"primary", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}},
+        {"electron", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}},
+        {"positron", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}},
+        {"photon", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}},
+        {"other", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}}   
+    };
+
+    TF2 *mult = new TF2("mult", "[0]*y", 0.0, 1.0, 0.0, 2000.0); 
 
     //gen defined in constants.h
     for(Int_t g=0; g<gen.size(); g++){
@@ -57,7 +66,8 @@ Int_t collect(){
 //                                    std::cout << g_name << std::endl;
                                     TGraphErrors *g1 = (TGraphErrors*) f->Get(g_name);
                                     f_out.cd();
-                                    g1->Apply(mult);
+                                    //mult->SetParameter(0, scaling[p_type[p]][p_nrg[q]]);
+                                    //g1->Apply(mult);
                                     TString g_out_name = Form("%s_%s_%s_%s_%d_%d_%d", gen[g].Data(), metric[m].Data(), p_type[p].Data(), p_nrg[q].Data(), s+1, i, r);
                                     g1->Write(g_out_name, TObject::kOverwrite);
                                 }

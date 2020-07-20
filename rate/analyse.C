@@ -28,6 +28,15 @@ Double_t size_septanti = 2.0*TMath::Pi()/n_septant;
 std::vector<Double_t> off_septant;
 TString part;
 
+//scaling map
+std::map<TString, std::map<TString, Float_t>> scaling = {
+    {"primary", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}},
+    {"electron", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}},
+    {"positron", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}},
+    {"photon", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}},
+    {"other", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}}   
+};
+
 //Radii of rings
 //can be made into array so each sector's radii may be different
 Float_t Rmin []= {640.0, 640.0, 680.0, 720.0, 785.0, 875.0, 1035.0, 1200.0}; 
@@ -236,7 +245,7 @@ for (size_t event=0; event<nEvents; event++){
                             if (hit_pid[part]){                             
                                 //std::cout << part << std::endl;
                                 //std::cout << hit.r << std::endl;
-                                h[part]->Fill(hit.r, (fRate)*weight);
+                                h[part]->Fill(hit.r, (fRate)*weight*scaling[p_type[l]][p_nrg[m]]);
 //                                h_fom[part]->Fill(hit.r, (fRate)*(fEvent->A)*(fEvent->A)*weight);                
 //                                h_asy[part]->Fill(fEvent->A, fRate*weight);
                             }
