@@ -80,7 +80,8 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
 
 int multi_g_add(){
     #include "../constants.h"
-    TFile *f = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/collect.root");
+    TFile *f1 = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/collect.root");
+    TFile *f2 = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/mag_over10M/collect3.root");
     TFile f_out("multi_g_add.root", "RECREATE");   
     
     std::vector<Int_t> colour = {1, 2, 3, 4, 6, 46};
