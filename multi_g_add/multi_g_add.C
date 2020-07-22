@@ -3,23 +3,17 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
  
     TMultiGraph *mg = new TMultiGraph(); 
 
-    Int_t sum_mode = 2; //sum mode 1 is a summation over all listed energies, types, and generators in an entry of graphs
+    Int_t sum_mode = 1; //sum mode 1 is a summation over all listed energies, types, and generators in an entry of graphs
                         //sum mode 2 is a more specific summation, only choosing specific generators, types, and energies
     
-    if(sum_mode==1){
-        std::vector<std::vector<std::vector<TString>>> graphs;
-        //graphs.push_back({{list of gen}, {list of p_type}, {list of p_nrg}, {title}, {scale}}); is the format
-        graphs.push_back({{"moller"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"moller_prim_>1MeV"}, {"1"}});
-        graphs.push_back({{"elastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"elastic_prim_>1MeV"}, {"1"}});
-        graphs.push_back({{"inelastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"inelastic_prim_>1MeV"}, {"10"}});
-        graphs.push_back({{"elastic", "moller", "inelastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"all_prim_>1MeV"}, {"1"}});
-        graphs.push_back({{"beam"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam_prim_>1MeV"}, {"1"}});
-    }else if(sum_mode==2){
-        std::vector<std::vector<<TString>> graphs;
-        //graphs.push_back({list of graph names})
-        graphs.push_back({"moller_rate_primary_gte_1000_1_0_0", "elastic_rate_primary_gte_1000_1_0_0"});
-        graphs.push_back({"beam_rate_primary_gte_1000_1_0_0"});
-    }
+    std::vector<std::vector<std::vector<TString>>> graphs;
+    //graphs.push_back({{list of gen}, {list of p_type}, {list of p_nrg}, {title}, {scale}}); is the format
+    graphs.push_back({{"beam"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam_prim_>1MeV"}, {"1"}});
+    graphs.push_back({{"beam"}, {"electron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam_electron_>1MeV"}, {"1"}});
+    graphs.push_back({{"beam"}, {"positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam_positron_>1MeV"}, {"1"}});
+    graphs.push_back({{"beam"}, {"photon"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam_photon_>1MeV"}, {"1"}});
+    graphs.push_back({{"beam"}, {"other"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam_other_>1MeV"}, {"1"}});
+    graphs.push_back({{"beam"}, {"electron", "positron", "photon", "other"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam_all_>1MeV"}, {"1"}});
 
     TString title;
 
@@ -34,42 +28,25 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
         std::fill(y_val.begin(), y_val.end(), 0.0);
         std::fill(y_err.begin(), y_err.end(), 0.0); 
         std::fill(y_err_sq.begin(), y_err_sq.end(), 0.0); 
-        if(sum_mode==1){
-            Double_t scale_plot = graphs[i][4][0].Atof();
-            for(Int_t j=0; j<graphs[i][0].size(); j++){ //loop through generators
-                for(Int_t k=0; k<graphs[i][1].size(); k++){ //type
-                    for(Int_t l=0; l<graphs[i][2].size(); l++){ //energy
-                        TString g_name = Form("%s_%s_%s_%s_%d_%d_%d", graphs[i][0][j].Data(), metric.Data(), graphs[i][1][k].Data(), graphs[i][2][l].Data(), septant, sector, ring);
-    //                    std::cout << g_name << std::endl;
-                        TGraphErrors *g1 = (TGraphErrors*) f->Get(g_name);
-                        tmp_y_val = g1->GetY();
-                        tmp_y_err = g1->GetEY();                    
-                        for(Int_t m=0; m<scale.size(); m++){ //scale for viewing purposes
-                            y_val[m] += scale_plot*tmp_y_val[m];
-                            y_err_sq[m] += scale_plot*scale_plot*tmp_y_err[m]*tmp_y_err[m];
-                        }
-                        for(Int_t m=0; m<scale.size(); m++){
-                            y_err[m] = sqrt(y_err_sq[m]);
-                        }
+        Double_t scale_plot = graphs[i][4][0].Atof();
+        for(Int_t j=0; j<graphs[i][0].size(); j++){ //loop through generators
+            for(Int_t k=0; k<graphs[i][1].size(); k++){ //type
+                for(Int_t l=0; l<graphs[i][2].size(); l++){ //energy
+                    TString g_name = Form("%s_%s_%s_%s_%d_%d_%d", graphs[i][0][j].Data(), metric.Data(), graphs[i][1][k].Data(), graphs[i][2][l].Data(), septant, sector, ring);
+//                    std::cout << g_name << std::endl;
+                    TGraphErrors *g1 = (TGraphErrors*) f->Get(g_name);
+                    tmp_y_val = g1->GetY();
+                    tmp_y_err = g1->GetEY();                    
+                    for(Int_t m=0; m<scale.size(); m++){ //scale for viewing purposes
+                        y_val[m] += scale_plot*tmp_y_val[m];
+                        y_err_sq[m] += scale_plot*scale_plot*tmp_y_err[m]*tmp_y_err[m];
+                    }
+                    for(Int_t m=0; m<scale.size(); m++){
+                        y_err[m] = sqrt(y_err_sq[m]);
                     }
                 }
-            }   
-        }else if(sum_mode==2){
-            for(Int_t j=0; j<graphs[i].size(); j++){
-                TString g_name = Form("%s", graphs[i][j].Dat());
-                //std::cout << g_name << std::endl;
-                TGraphErrors *g1 = (TGraphErrors*) f->Get(g_name);
-                tmp_y_val = g1->GetY();
-                tmp_y_err = g1->GetEY();                    
-                for(Int_t m=0; m<scale.size(); m++){ //scale for viewing purposes
-                    y_val[m] += scale_plot*tmp_y_val[m];
-                    y_err_sq[m] += scale_plot*scale_plot*tmp_y_err[m]*tmp_y_err[m];
-                }
-                for(Int_t m=0; m<scale.size(); m++){
-                    y_err[m] = sqrt(y_err_sq[m]);
-                }
             }
-        }
+        }   
 
         //name the graphs for the legend
         TGraphErrors *g_out = new TGraphErrors(scale.size(), &scale[0], &y_val[0], &scale_err[0], &y_err[0]);
@@ -92,7 +69,7 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
 
     c->Update(); 
     c->BuildLegend(0.7, 0.1, 0.9, 0.25);
-    c->Print(Form("curscan_prims_w_newbeam/%s.png", out_name.Data())); //make sure destniiation already exists
+    c->Print(Form("beam_secondaries/%s.png", out_name.Data())); //make sure destniiation already exists
 
 //    f_out.cd();
     mg->Write(out_name);

@@ -24,7 +24,7 @@ std::map<TString, TH1D*> h;
 std::map<TString, TH1D*> h_fom;
 std::map<TString, TH1D*> h_asy;
 
-Double_t size_septanti = 2.0*TMath::Pi()/n_septant;
+Double_t size_septant = 2.0*TMath::Pi()/n_septant;
 std::vector<Double_t> off_septant;
 TString part;
 
@@ -243,8 +243,11 @@ for (size_t event=0; event<nEvents; event++){
                         for (Int_t m=0; m<p_nrg.size(); m++){
                             part= Form("%s_%s_%d_%d_%d", p_type[l].Data(), p_nrg[m].Data(), i+1, j, k);
                             if (hit_pid[part]){                             
-                                //std::cout << part << std::endl;
-                                //std::cout << hit.r << std::endl;
+                                if(generator=="beam"){
+                                    std::cout << part << std::endl;
+                                    std::cout << hit.r << std::endl;
+                                }
+                                
                                 h[part]->Fill(hit.r, (fRate)*weight*scaling[p_type[l]][p_nrg[m]]);
 //                                h_fom[part]->Fill(hit.r, (fRate)*(fEvent->A)*(fEvent->A)*weight);                
 //                                h_asy[part]->Fill(fEvent->A, fRate*weight);
