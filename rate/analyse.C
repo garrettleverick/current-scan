@@ -30,7 +30,7 @@ TString part;
 for(Int_t l=0; l<p_type.size(); l++){
     for(Int_t m=0; m<p_nrg.size(); m++){
         part= Form("%s_%s", p_type[l].Data(), p_nrg[m].Data());
-        h[part]=new TH1D(part, Form("%s rate, Generator=%s", part.Data(), generator.Data()), 100, 0, 200);
+        h[part]=new TH1D(part, Form("%s rate, Generator=%s", part.Data(), generator.Data()),15, 0, 1.5);
     }        
 }
 
@@ -82,7 +82,7 @@ for (size_t event=0; event<nEvents; event++){
         remollGenericDetectorHit_t hit=fHit->at(i);
        
         //continue if not a hit at det 28 or outside the main det radii
-        if(hit.det!=27){
+        if(hit.det!=28){
             continue;
         }
 
@@ -123,7 +123,7 @@ for (size_t event=0; event<nEvents; event++){
         for (Int_t l=0; l<p_type.size(); l++){
             for (Int_t m=0; m<p_nrg.size(); m++){
                 part= Form("%s_%s", p_type[l].Data(), p_nrg[m].Data());
-                hit_pid[part]=hit_type[p_type[l]] && hit_nrg[p_nrg[m]];
+                hit_pid[part]=hit_type[p_type[l]] && hit_nrg[p_nrg[m]] && hit.r<=1035 && hit.r>=875;
             }
         }
 
@@ -132,7 +132,7 @@ for (size_t event=0; event<nEvents; event++){
             for (Int_t m=0; m<p_nrg.size(); m++){
                 part= Form("%s_%s", p_type[l].Data(), p_nrg[m].Data());
                 if (hit_pid[part]){                             
-                    h[part]->Fill(hit.r, (fRate)*weight);
+                    h[part]->Fill(hit.th, (fRate)*weight);
                 }
             }  
         } 
