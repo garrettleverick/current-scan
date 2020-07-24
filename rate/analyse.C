@@ -21,53 +21,17 @@ if(generator=="beam"){
 TFile f(Form("%s", out.Data()), "RECREATE");
 
 std::map<TString, TH1D*> h;
-std::map<TString, TH1D*> h_fom;
-std::map<TString, TH1D*> h_asy;
 
 Double_t size_septant = 2.0*TMath::Pi()/n_septant;
 std::vector<Double_t> off_septant;
 TString part;
 
-//scaling map
-std::map<TString, std::map<TString, Float_t>> scaling = {
-    {"primary", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}},
-    {"electron", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}},
-    {"positron", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}},
-    {"photon", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}},
-    {"other", {{"lt_1", 1.0}, {"1_to_10", 1.0}, {"10_to_100", 1.0}, {"100_to_1000", 1.0}, {"gte_1000", 1.0}}}   
-};
-
-//Radii of rings
-//can be made into array so each sector's radii may be different
-Float_t Rmin []= {640.0, 640.0, 680.0, 720.0, 785.0, 875.0, 1035.0, 1200.0}; 
-Float_t Rmax []= {1500.0, 680.0, 720.0, 785.0, 875.0, 1035.0, 1140.0, 1500.0};
-
 //Setting up histograms, 
-for(Int_t i=0; i<n_septant; i++){
-off_septant.push_back((3.0-1.0*i)*size_septant);
-    for(Int_t j=0; j<n_sector+1; j++){
-        for(Int_t k=0; k<n_ring+1; k++){
-            for(Int_t l=0; l<p_type.size(); l++){
-                for(Int_t m=0; m<p_nrg.size(); m++){
-                    part= Form("%s_%s_%d_%d_%d", p_type[l].Data(), p_nrg[m].Data(), i+1, j, k);
-//                    std::cout<< part<< std::endl; 
-                    h[part]=new TH1D(part, Form("%s rate, Generator=%s", part.Data(), generator.Data()), 400, Rmin[k], Rmax[k]);
-/* not worrying about asym or figure of merit right now 
-                    h_fom[part]=new TH1D(part+"_fom", Form("%s rate, Generator=%s, Rrange= [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 400, Rmin[k], Rmax[k]);
-
-                    if(generator=="moller"){
-                        h_asy[part]=new TH1D(part+"_asy", Form("%s FOM, Generator=%s, Rrange =  [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 300, -60, 0);
-
-                    }else if(generator=="elastic"){
-                        h_asy[part]=new TH1D(part+"_asy", Form("%s asy, Generator=%s, Rrange= [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 50, -150, 0);
-
-                    }else{
-                        h_asy[part] = new TH1D(part+"_asy", Form("%s asy, Generator=%s, Rrange=  [%3.0f-%3.0f mm]", part.Data(), generator.Data(), Rmin[k], Rmax[k]), 400, -2000, 0);
-                    }
-*/              }
-            }        
-        } 
-    }
+for(Int_t l=0; l<p_type.size(); l++){
+    for(Int_t m=0; m<p_nrg.size(); m++){
+        part= Form("%s_%s", p_type[l].Data(), p_nrg[m].Data());
+        h[part]=new TH1D(part, Form("%s rate, Generator=%s", part.Data(), generator.Data()), 100, 0, 200);
+    }        
 }
 
 Double_t fRate=0;
@@ -77,8 +41,6 @@ T.SetBranchAddress("ev", &fEvent); //getting (the locations of) fEvent, fHit, an
 T.SetBranchAddress("hit", &fHit);
 T.SetBranchAddress("rate", &fRate);
         
-
-
 Int_t prim_track=0; // maximum track of primary, we can't tell which moller e- is the original so they are both given trid 2
 if(generator=="moller"){
     prim_track=2;
@@ -87,7 +49,7 @@ if(generator=="moller"){
 }
 
 //Initialise variables for processing the data
-Float_t acceptance_rad = 30; //mm
+Double_t acceptance_angle = 0.005;
 std::vector<Int_t> good_track; 
 //^ is where tracks we want to keep are stored. The first loop finds the good tracks, the second loop find the hits on the main detector with said tracks
 Int_t display_percent = 1;
@@ -106,60 +68,35 @@ for (size_t event=0; event<nEvents; event++){
     good_track.clear();
 
     //we want to keep secondaries from beam gen under a certain angle, and keep secondaries from physics above. Want all prims from physics
-    if(generator=="beam"){
-        for(size_t k=0; k<fHit->size(); k++){
-            remollGenericDetectorHit_t hit = fHit->at(k);
-            if(hit.det!=27){continue;} //ignore if hit is not at det 27 (z = 750)
-            Float_t rad = hit.r;
-//            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.z);
-            if(rad < acceptance_rad && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
-                good_track.push_back(hit.trid);
-            }
+    for(size_t k=0; k<fHit->size(); k++){
+        remollGenericDetectorHit_t hit = fHit->at(k);
+        if(hit.det!=26){continue;} //ignore if hit is not at det 27 (z = 750)
+        Float_t theta = abs(atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.z));
+//        cout << theta << endl;
+        if(theta < acceptance_angle && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
+            good_track.push_back(hit.trid);
         }
-    } else{
-        for(size_t k=0; k<fHit->size(); k++){
-            remollGenericDetectorHit_t hit = fHit->at(k);
-            if(hit.det!=27){continue;}
-            Float_t rad = hit.r;
-//            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.z);
-            if(rad > acceptance_rad && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
-                good_track.push_back(hit.trid);
-            }
-        }
-    } 
+    }
 
     for(size_t i=0; i<fHit->size(); i++){
         remollGenericDetectorHit_t hit=fHit->at(i);
        
         //continue if not a hit at det 28 or outside the main det radii
-        if(hit.det!=28){
+        if(hit.det!=27){
             continue;
-        } else{
-            if(hit.r<Rmin[0] || hit.r>Rmax[0]){continue;}
         }
 
+        iter = find(good_track.begin(), good_track.end(), hit.trid);
+        if(iter==good_track.end()){continue;}
+        
         Bool_t primary_cond;
         if(generator=="beam"){
-            iter = find(good_track.begin(), good_track.end(), hit.trid);
-            if(iter==good_track.end()){continue;}
             fRate=1.0;
-            primary_cond = hit.vz<=-3875 && hit.pid==11;
-        } else{
-            iter = find(good_track.begin(), good_track.end(), hit.trid);
-            primary_cond = hit.trid<=prim_track;
-            if(iter==good_track.end() && not primary_cond){continue;}
-        }
-/*        
-        if(generator=="beam"){
-            fRate=1.0;
-        }
-
-        if(generator=="beam"){
             primary_cond = hit.vz<=-3875 && hit.pid==11;
         } else{
             primary_cond = hit.trid<=prim_track;
         }
-*/
+        
         //below are maps which evaluate the particle type and energy, these maps are called when filling the histograms
         std::map<TString, Bool_t> hit_type = {
             {"all", 1},
@@ -182,99 +119,32 @@ for (size_t event=0; event<nEvents; event++){
             {"gte_1000", hit.p>=1000}
         };
 
-        //sectioning off the septant into 13 sectors
-        Double_t sepdiv=2*TMath::Pi()/7.0;
-        Int_t sec=0;
-        Double_t phi=atan2(hit.y,hit.x);
-        if (phi<0) {phi+=2*TMath::Pi();}
-        Double_t secphi = fmod(phi, 2*TMath::Pi()/7);
-        if      (secphi<TMath::Pi()/84.0)   {sec=1;}           
-        else if (secphi<3*TMath::Pi()/84.0) {sec=2;}   
-        else if (secphi<5*TMath::Pi()/84.0) {sec=3;}   
-        else if (secphi<7*TMath::Pi()/84.0) {sec=4;}   
-        else if (secphi<9*TMath::Pi()/84.0) {sec=5;}   
-        else if (secphi<11*TMath::Pi()/84.0) {sec=6;} 
-        else if (secphi<13*TMath::Pi()/84.0) {sec=7;}   
-        else if (secphi<15*TMath::Pi()/84.0) {sec=8;} 
-        else if (secphi<17*TMath::Pi()/84.0) {sec=9;}   
-        else if (secphi<19*TMath::Pi()/84.0) {sec=10;} 
-        else if (secphi<21*TMath::Pi()/84.0) {sec=11;}
-        else if (secphi<23*TMath::Pi()/84.0) {sec=12;}   
-        else {sec=13;}                                   
-
-        //sectioning off septant into 7 rings
-        Int_t ring=0;
-        Double_t rad=hit.r;
-        for(Int_t r=1; r<n_ring+1; r++){ //starts at 1 to skip 0 (which is all)
-            if (rad<Rmax[r] && rad>=640.0){
-                ring = r;
-                break;
-            }
-        }
-
-        TVector2 xy(hit.x, hit.y);
-        Bool_t bool_septant;
-        Bool_t bool_sector;
-        Bool_t bool_ring;
-
         std::map<TString, Bool_t> hit_pid;
-        for (Int_t i=0; i<n_septant; i++){ //sorting into septants
-            TVector2 XY=xy.Rotate(off_septant[i]);
-            bool_septant= atan(XY.Y()/XY.X())>= -size_septant/2.0 && atan(XY.Y()/XY.X()) < size_septant/2.0 && XY.X()<0;//confused
-            for (Int_t j=0; j<n_sector+1; j++){
-                for (Int_t k=0; k<n_ring+1; k++){
-                    for (Int_t l=0; l<p_type.size(); l++){
-                        for (Int_t m=0; m<p_nrg.size(); m++){
-                            part= Form("%s_%s_%d_%d_%d", p_type[l].Data(), p_nrg[m].Data(), i+1, j, k);
-                            if(j==0) {bool_sector=1;} else {bool_sector= sec==j;}; 
-                            if(k==0) {bool_ring=1;} else {bool_ring= ring==k;}; 
-                            hit_pid[part]=bool_septant && bool_sector && bool_ring && hit_type[p_type[l]] && hit_nrg[p_nrg[m]];
-                        }
-                    }
-                }
+        for (Int_t l=0; l<p_type.size(); l++){
+            for (Int_t m=0; m<p_nrg.size(); m++){
+                part= Form("%s_%s", p_type[l].Data(), p_nrg[m].Data());
+                hit_pid[part]=hit_type[p_type[l]] && hit_nrg[p_nrg[m]];
             }
         }
 
         //fill the histograms
-        for (Int_t i=0; i<n_septant; i++){
-            for (Int_t j=0; j<n_sector+1 ;j++){
-                for (Int_t k=0; k<n_ring+1; k++){
-                    for (Int_t l=0; l<p_type.size(); l++){
-                        for (Int_t m=0; m<p_nrg.size(); m++){
-                            part= Form("%s_%s_%d_%d_%d", p_type[l].Data(), p_nrg[m].Data(), i+1, j, k);
-                            if (hit_pid[part]){                             
-                                if(generator=="beam"){
-                                    std::cout << part << std::endl;
-                                    std::cout << hit.r << std::endl;
-                                }
-                                
-                                h[part]->Fill(hit.r, (fRate)*weight*scaling[p_type[l]][p_nrg[m]]);
-//                                h_fom[part]->Fill(hit.r, (fRate)*(fEvent->A)*(fEvent->A)*weight);                
-//                                h_asy[part]->Fill(fEvent->A, fRate*weight);
-                            }
-                        }
-                    }
-                }  
-            } 
-        }    
-    }
+        for (Int_t l=0; l<p_type.size(); l++){
+            for (Int_t m=0; m<p_nrg.size(); m++){
+                part= Form("%s_%s", p_type[l].Data(), p_nrg[m].Data());
+                if (hit_pid[part]){                             
+                    h[part]->Fill(hit.r, (fRate)*weight);
+                }
+            }  
+        } 
+    }    
 }
 
-
-for (Int_t i=0; i<n_septant; i++){
-    for (Int_t j=0; j<n_sector+1; j++){
-        for (Int_t k=0; k<n_ring+1; k++){
-            for (Int_t l=0; l<p_type.size(); l++){
-                for (Int_t m=0; m<p_nrg.size(); m++){
-                    part= Form("%s_%s_%d_%d_%d", p_type[l].Data(), p_nrg[m].Data(), i+1, j, k);
-                    //std::cout<< part << std::endl;
-                    h[part]->Write("", TObject::kOverwrite); 
-//                    h_fom[part]->Write("", TObject::kOverwrite);
-//                    h_asy[part]->Write("", TObject::kOverwrite);
-                }
-            }
-        } 
-    }   
+for (Int_t l=0; l<p_type.size(); l++){
+    for (Int_t m=0; m<p_nrg.size(); m++){
+        part= Form("%s_%s", p_type[l].Data(), p_nrg[m].Data());
+        //std::cout<< part << std::endl;
+        h[part]->Write("", TObject::kOverwrite); 
+    }
 }
 
 return 0;
