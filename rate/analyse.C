@@ -78,7 +78,6 @@ T.SetBranchAddress("hit", &fHit);
 T.SetBranchAddress("rate", &fRate);
         
 
-
 Int_t prim_track=0; // maximum track of primary, we can't tell which moller e- is the original so they are both given trid 2
 if(generator=="moller"){
     prim_track=2;
@@ -88,7 +87,14 @@ if(generator=="moller"){
 
 //Initialise variables for processing the data
 Float_t acceptance_rad = 30; //mm
-std::vector<Int_t> good_track; 
+std::map<TString, std::vector<Int_t>> good_track = {
+    {"lt_4", {}},
+    {"4_to_6", {}},
+    {"6_to_8", {}},
+    {"8_to_10", {}},
+    {"gte_10", {}}}; 
+std::vector<TString> p_angle = {"lt_4", "4_to_6", "6_to_8", "8_to_10", "gte_10"};
+
 //^ is where tracks we want to keep are stored. The first loop finds the good tracks, the second loop find the hits on the main detector with said tracks
 Int_t display_percent = 1;
 std::vector<int>::iterator iter;
@@ -103,40 +109,37 @@ for (size_t event=0; event<nEvents; event++){
         display_percent+=1;
     }
     
-    good_track.clear();
+    for(auto const& [key, vec] : good_track){ //goes through each entry of the map good_track
+        good_track[key].clear();
+    }
 
     //we want to keep secondaries from beam gen under a certain angle, and keep secondaries from physics above. Want all prims from physics
-    if(generator=="beam"){
-        for(size_t k=0; k<fHit->size(); k++){
-            remollGenericDetectorHit_t hit = fHit->at(k);
-            if(hit.det!=27){continue;} //ignore if hit is not at det 27 (z = 750)
-            Float_t rad = hit.r;
-//            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.z);
-            if(rad < acceptance_rad && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
-                good_track.push_back(hit.trid);
+    for(size_t k=0; k<fHit->size(); k++){
+        remollGenericDetectorHit_t hit = fHit->at(k);
+        if(hit.det!=26){continue;} //ignore if hit is not at det 26 (target)
+        Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.z);
+        std::map<TString, Bool_t> hit_angle = {
+            {"lt_4", theta<4},
+            {"4_to_6", theta<6 && theta >=4},
+            {"6_to_8", theta<8 && theta >=6},
+            {"8_to_10", theta<10 && theta >=8},
+            {"gte_10", theta>=10}};
+        for(Int_t j=0; j<p_angle.Data(); j++){ 
+            if(hit_angle[p_angle[j]] && find(good_track[j].begin(), good_track[j].end(), hit.trid) == good_track[j].end()){
+                good_track[p_angle[j]].push_back(hit.trid);
             }
         }
-    } else{
-        for(size_t k=0; k<fHit->size(); k++){
-            remollGenericDetectorHit_t hit = fHit->at(k);
-            if(hit.det!=27){continue;}
-            Float_t rad = hit.r;
-//            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.z);
-            if(rad > acceptance_rad && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
-                good_track.push_back(hit.trid);
-            }
-        }
-    } 
+    }
 
     for(size_t i=0; i<fHit->size(); i++){
         remollGenericDetectorHit_t hit=fHit->at(i);
        
         //continue if not a hit at det 28 or outside the main det radii
-        if(hit.det!=28){
+        if(hit.det!=27){
             continue;
-        } else{
-            if(hit.r<Rmin[0] || hit.r>Rmax[0]){continue;}
         }
+
+        for(Int_t j=0; j<p_angle.size(); j++){
 
         Bool_t primary_cond;
         if(generator=="beam"){
@@ -149,17 +152,7 @@ for (size_t event=0; event<nEvents; event++){
             primary_cond = hit.trid<=prim_track;
             if(iter==good_track.end() && not primary_cond){continue;}
         }
-/*        
-        if(generator=="beam"){
-            fRate=1.0;
-        }
-
-        if(generator=="beam"){
-            primary_cond = hit.vz<=-3875 && hit.pid==11;
-        } else{
-            primary_cond = hit.trid<=prim_track;
-        }
-*/
+        
         //below are maps which evaluate the particle type and energy, these maps are called when filling the histograms
         std::map<TString, Bool_t> hit_type = {
             {"all", 1},
