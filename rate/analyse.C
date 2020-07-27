@@ -30,17 +30,20 @@ TString part;
 for(Int_t l=0; l<p_type.size(); l++){
     for(Int_t m=0; m<p_nrg.size(); m++){
         part= Form("%s_%s", p_type[l].Data(), p_nrg[m].Data());
-        h[part]=new TH1D(part, Form("%s rate, Generator=%s", part.Data(), generator.Data()),15, 0, 1.5);
+        h[part]=new TH1D(part, Form("Theta Distribution from hits in Ring 5, %s, Generator=%s", part.Data(), generator.Data()), 100, 0, 0.030);
     }        
 }
 
 Double_t fRate=0;
 remollEvent_t *fEvent=0;
 std::vector<remollGenericDetectorHit_t>  *fHit=0;
+std::vector<remollEventParticle_t> *fPart=0;
 T.SetBranchAddress("ev", &fEvent); //getting (the locations of) fEvent, fHit, and fRate from raw data. An event is a stack of hits
 T.SetBranchAddress("hit", &fHit);
 T.SetBranchAddress("rate", &fRate);
-        
+T.SetBranchAddress("part", &fPart);
+
+
 Int_t prim_track=0; // maximum track of primary, we can't tell which moller e- is the original so they are both given trid 2
 if(generator=="moller"){
     prim_track=2;
@@ -73,11 +76,11 @@ for (size_t event=0; event<nEvents; event++){
         if(hit.det!=26){continue;} //ignore if hit is not at det 27 (z = 750)
         Float_t theta = abs(atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.z));
 //        cout << theta << endl;
-        if(theta < acceptance_angle && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
+        if(theta > acceptance_angle && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
             good_track.push_back(hit.trid);
         }
     }
-
+    
     for(size_t i=0; i<fHit->size(); i++){
         remollGenericDetectorHit_t hit=fHit->at(i);
        
@@ -126,13 +129,15 @@ for (size_t event=0; event<nEvents; event++){
                 hit_pid[part]=hit_type[p_type[l]] && hit_nrg[p_nrg[m]] && hit.r<=1035 && hit.r>=875;
             }
         }
-
+        
         //fill the histograms
         for (Int_t l=0; l<p_type.size(); l++){
             for (Int_t m=0; m<p_nrg.size(); m++){
                 part= Form("%s_%s", p_type[l].Data(), p_nrg[m].Data());
-                if (hit_pid[part]){                             
-                    h[part]->Fill(hit.th, (fRate)*weight);
+                if (hit_pid[part]){        
+//                    cout << part << endl;                    
+//                    cout << fPart->at(0).th << endl; 
+                    h[part]->Fill(fPart->at(0).th, weight);
                 }
             }  
         } 
