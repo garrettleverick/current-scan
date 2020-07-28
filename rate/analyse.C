@@ -52,7 +52,8 @@ if(generator=="moller"){
 }
 
 //Initialise variables for processing the data
-Double_t acceptance_angle = 0.005;
+Double_t acceptance_angle = 0.06;
+Double_t acceptance_rad = 38.0;
 std::vector<Int_t> good_track; 
 //^ is where tracks we want to keep are stored. The first loop finds the good tracks, the second loop find the hits on the main detector with said tracks
 Int_t display_percent = 1;
@@ -74,8 +75,9 @@ for (size_t event=0; event<nEvents; event++){
     for(size_t k=0; k<fHit->size(); k++){
         remollGenericDetectorHit_t hit = fHit->at(k);
         if(hit.det!=26){continue;} //ignore if hit is not at det 27 (z = 750)
-        Float_t theta = abs(atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.z));
-//        cout << theta << endl;
+        Float_t theta = abs(atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.pz));
+        Double_t rad = hit.r;
+        //        cout << theta << endl;
         if(theta > acceptance_angle && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
             good_track.push_back(hit.trid);
         }
@@ -137,7 +139,7 @@ for (size_t event=0; event<nEvents; event++){
                 if (hit_pid[part]){        
 //                    cout << part << endl;                    
 //                    cout << fPart->at(0).th << endl; 
-                    h[part]->Fill(fPart->at(0).th, weight);
+                    h[part]->Fill(fPart->at(hit.trid-1).th, weight);
                 }
             }  
         } 

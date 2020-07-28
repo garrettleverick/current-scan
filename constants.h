@@ -20,7 +20,7 @@ gen.push_back("inelastic");
 gen.push_back("beam");
 
 //MUST CHANGE THE MAP IN rate/analysis.C TO WORK
-std::vector<TString> p_type = {"primary", "electron", "positron", "photon", "other"};
+std::vector<TString> p_type = {"primary"};
 std::vector<TString> p_nrg = {"gt_1", "lt_1", "1_to_10", "10_to_100", "100_to_1000", "gte_1000"};
 //std::vector<TString> p_type = {"all", "secondary, "primary", "electron", "positron", "photon", "other_woph", "other"};
 //std::vector<TString> p_nrg = {"all", "gt_1", "lt_1", "1_to_10", "10_to_100", "100_to_1000", "gte_1000"};
