@@ -16,7 +16,7 @@ metric.push_back("rate");
 std::vector<TString> gen;
 gen.push_back("moller");
 gen.push_back("elastic");
-//gen.push_back("inelastic");
+gen.push_back("inelastic");
 gen.push_back("beam");
 
 //MUST CHANGE THE MAP IN rate/analysis.C TO WORK

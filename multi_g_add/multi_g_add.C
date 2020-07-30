@@ -10,10 +10,13 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
     std::vector<std::vector<std::vector<TString>>> graphs;
     //graphs.push_back({{list of gen}, {list of p_type}, {list of p_nrg}, {title}, {scale}, {sum_mode=1}}); is the format for sum mode 1
     //graphs.push_back({{list of names}, {}, {}, {title}, {scale}, {sum_mode=2}}); is the format for sum mode 2
-    graphs.push_back({{"moller", "elastic"}, {"electron", "positron", "photon", "other"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"angle_phys_all_>1MeV"}, {"1"}, {"1"}});
-    graphs.push_back({{"2_moller", "2_elastic"}, {"electron", "positron", "photon", "other"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys_all_>1MeV"}, {"1"}, {"1"}});
-    graphs.push_back({{"moller", "elastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"angle_phys_prim_>1MeV"}, {"1"}, {"1"}});
-    graphs.push_back({{"2_moller", "2_elastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys_prim_>1MeV"}, {"1"}, {"1"}});
+    graphs.push_back({{"moller"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"moller e-, >1MeV"}, {"1"}, {"1"}});
+    graphs.push_back({{"elastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"elastic ep e-, >1MeV"}, {"1"}, {"1"}});
+    graphs.push_back({{"inelastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"inelastic ep e-, >1MeV"}, {"10"}, {"1"}});
+    graphs.push_back({{"moller", "elastic", "inelastic"}, {"electron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"secondary e-, >1MeV"}, {"100"}, {"1"}});
+    graphs.push_back({{"moller", "elastic", "inelastic"}, {"photon"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"photon, >1MeV"}, {"1"}, {"1"}});
+    graphs.push_back({{"moller", "elastic", "inelastic"}, {"positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"e+, >1MeV"}, {"100"}, {"1"}});
+    graphs.push_back({{"moller", "elastic", "inelastic"}, {"primary", "electron", "photon", "positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"sum of all, >1MeV"}, {"1"}, {"1"}});
 
     TString title;
     TGraphErrors *g1;
@@ -45,8 +48,8 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
                             g_name = tmp_name;
                             g1 = (TGraphErrors*) f1->Get(g_name);
                         }
-//                        std::cout << g_name << std::endl;
-                        TGraphErrors *g1 = (TGraphErrors*) f1->Get(g_name);
+                        //std::cout << g_name << std::endl;
+//                        TGraphErrors *g1 = (TGraphErrors*) f1->Get(g_name);
                         tmp_y_val = g1->GetY();
                         tmp_y_err = g1->GetEY();                    
                         for(Int_t m=0; m<scale.size(); m++){ //scale for viewing purposes
@@ -104,7 +107,7 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
 
     c->Update(); 
     c->BuildLegend(0.7, 0.1, 0.9, 0.25);
-    c->Print(Form("test/%s.png", out_name.Data())); //make sure destniiation already exists
+    c->Print(Form("current_scan_by_type/%s.png", out_name.Data())); //make sure destniiation already exists
 
 //    f_out.cd();
     mg->Write(out_name);
@@ -119,7 +122,7 @@ int multi_g_add(){
     TFile *f2 = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/mag_over10M/collect3.root");
     TFile f_out("multi_g_add.root", "RECREATE");   
     
-    std::vector<Int_t> colour = {1, 2, 3, 4, 6, 46};
+    std::vector<Int_t> colour = {2, 3, 4, 6, 46, 7, 1};
     std::vector<Int_t> m_style = {20, 21, 22, 23, 29, 33, 43, 31, 34};
 
     TCanvas *c = new TCanvas("c", "c", 800, 600);
