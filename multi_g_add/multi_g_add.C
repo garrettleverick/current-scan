@@ -10,10 +10,10 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
     std::vector<std::vector<std::vector<TString>>> graphs;
     //graphs.push_back({{list of gen}, {list of p_type}, {list of p_nrg}, {title}, {scale}, {sum_mode=1}}); is the format for sum mode 1
     //graphs.push_back({{list of names}, {}, {}, {title}, {scale}, {sum_mode=2}}); is the format for sum mode 2
-    graphs.push_back({{"moller", "elastic"}, {"electron", "positron", "photon", "other"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"angle_phys_all_>1MeV"}, {"1"}, {"1"}});
-    graphs.push_back({{"2_moller", "2_elastic"}, {"electron", "positron", "photon", "other"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys_all_>1MeV"}, {"1"}, {"1"}});
-    graphs.push_back({{"moller", "elastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"angle_phys_prim_>1MeV"}, {"1"}, {"1"}});
-    graphs.push_back({{"2_moller", "2_elastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys_prim_>1MeV"}, {"1"}, {"1"}});
+    graphs.push_back({{"2_moller"}, {"primary", "electron", "positron", "photon", "other"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"all moller, >1MeV"}, {"1"}, {"1"}});
+    graphs.push_back({{"2_elastic"}, {"primary", "electron", "positron", "photon", "other"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"all elastic, >1MeV"}, {"1"}, {"1"}});
+    graphs.push_back({{"2_moller", "2_elastic"}, {"primary", "electron", "positron", "photon", "other"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"all phys, >1MeV"}, {"1"}, {"1"}});
+    graphs.push_back({{"2_beam"}, {"primary", "electron", "positron", "photon", "other"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"all beam, >1MeV"}, {"1"}, {"1"}});
 
     TString title;
     TGraphErrors *g1;
@@ -46,7 +46,6 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
                             g1 = (TGraphErrors*) f1->Get(g_name);
                         }
 //                        std::cout << g_name << std::endl;
-                        TGraphErrors *g1 = (TGraphErrors*) f1->Get(g_name);
                         tmp_y_val = g1->GetY();
                         tmp_y_err = g1->GetEY();                    
                         for(Int_t m=0; m<scale.size(); m++){ //scale for viewing purposes
@@ -104,7 +103,7 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
 
     c->Update(); 
     c->BuildLegend(0.7, 0.1, 0.9, 0.25);
-    c->Print(Form("test/%s.png", out_name.Data())); //make sure destniiation already exists
+    c->Print(Form("Beam_vs_Phys_all/%s.png", out_name.Data())); //make sure destniiation already exists
 
 //    f_out.cd();
     mg->Write(out_name);

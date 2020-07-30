@@ -111,7 +111,7 @@ for (size_t event=0; event<nEvents; event++){
             remollGenericDetectorHit_t hit = fHit->at(k);
             if(hit.det!=27){continue;} //ignore if hit is not at det 27 (z = 750)
             Float_t rad = hit.r;
-//            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.z);
+//            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.pz);
             if(rad < acceptance_rad && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
                 good_track.push_back(hit.trid);
             }
@@ -121,7 +121,7 @@ for (size_t event=0; event<nEvents; event++){
             remollGenericDetectorHit_t hit = fHit->at(k);
             if(hit.det!=27){continue;}
             Float_t rad = hit.r;
-//            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.z);
+//            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.pz);
             if(rad > acceptance_rad && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
                 good_track.push_back(hit.trid);
             }
@@ -139,14 +139,17 @@ for (size_t event=0; event<nEvents; event++){
         }
 
         Bool_t primary_cond;
+        Bool_t secondary_cond;
         if(generator=="beam"){
             iter = find(good_track.begin(), good_track.end(), hit.trid);
             if(iter==good_track.end()){continue;}
             fRate=1.0;
             primary_cond = hit.vz<=-3875 && hit.pid==11;
+            secondary_cond = hit.vz>-3875 && hit.pid==11;
         } else{
             iter = find(good_track.begin(), good_track.end(), hit.trid);
             primary_cond = hit.trid<=prim_track;
+            secondary_cond = hit.trid>prim_track && hit.pid==11;
             if(iter==good_track.end() && not primary_cond){continue;}
         }
 /*        
@@ -164,7 +167,7 @@ for (size_t event=0; event<nEvents; event++){
         std::map<TString, Bool_t> hit_type = {
             {"all", 1},
             {"primary", primary_cond},
-            {"electron", hit.trid>prim_track && hit.pid==11},
+            {"electron", secondary_cond},
             {"positron", hit.trid>prim_track && hit.pid==-11},
             {"photon", hit.trid>prim_track && hit.pid==22},
             {"secondary_woph", hit.trid>prim_track && hit.pid!=22},
@@ -248,7 +251,7 @@ for (size_t event=0; event<nEvents; event++){
                                     std::cout << hit.r << std::endl;
                                 }
                                 
-                                h[part]->Fill(hit.r, (fRate)*weight*scaling[p_type[l]][p_nrg[m]]);
+                                h[part]->Fill(hit.r, (fRate)*weight);
 //                                h_fom[part]->Fill(hit.r, (fRate)*(fEvent->A)*(fEvent->A)*weight);                
 //                                h_asy[part]->Fill(fEvent->A, fRate*weight);
                             }
