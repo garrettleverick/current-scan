@@ -112,7 +112,7 @@ for (size_t event=0; event<nEvents; event++){
             if(hit.det!=27){continue;} //ignore if hit is not at det 27 (z = 750)
             Float_t rad = hit.r;
 //            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.pz);
-            if(rad < acceptance_rad && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
+            if(find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
                 good_track.push_back(hit.trid);
             }
         }
@@ -122,7 +122,7 @@ for (size_t event=0; event<nEvents; event++){
             if(hit.det!=27){continue;}
             Float_t rad = hit.r;
 //            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.pz);
-            if(rad > acceptance_rad && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
+            if(find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
                 good_track.push_back(hit.trid);
             }
         }
@@ -247,8 +247,8 @@ for (size_t event=0; event<nEvents; event++){
                             part= Form("%s_%s_%d_%d_%d", p_type[l].Data(), p_nrg[m].Data(), i+1, j, k);
                             if (hit_pid[part]){                             
                                 if(generator=="beam"){
-                                    std::cout << part << std::endl;
-                                    std::cout << hit.r << std::endl;
+//                                    std::cout << part << std::endl;
+//                                    std::cout << hit.r << std::endl;
                                 }
                                 
                                 h[part]->Fill(hit.r, (fRate)*weight);

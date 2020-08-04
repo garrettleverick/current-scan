@@ -50,7 +50,7 @@ TGraphErrors plot(TString gen, TString metric, TString p_type, TString p_nrg, In
 
     for(Int_t i=0;i < scale.size(); i++){ 
         //NOTE: Bevcareful, harcoded path! Also the way the file system is set up is important for these macros
-        TString source_file = Form("/home/garrettl/projects/rrg-jmammei/garrettl/current-scan_data/analysed_data/%.3f/%s/%s.root", scale[i], gen.Data(), gen.Data()); 
+        TString source_file = Form("/home/garrettl/projects/rrg-jmammei/garrettl/current-scan_data/analysed_data_asym/%.3f/%s/%s.root", scale[i], gen.Data(), gen.Data()); 
         source.push_back(new TFile(source_file));
         TH1D *h_rate=(TH1D*) source[i]->Get(histname[metric]);
         rmin = h_rate->GetXaxis()->GetXmin(); 
