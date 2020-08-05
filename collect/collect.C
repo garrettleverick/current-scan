@@ -29,7 +29,7 @@ Int_t collect(){
 
     //gen defined in constants.h
     for(Int_t g=0; g<gen.size(); g++){
-        TString in_name = Form("%s/current-scan_data/int_data/%s.root", file_stem.Data(), gen[g].Data());
+        TString in_name = Form("%s/current-scan_data/int_data_asym/%s.root", file_stem.Data(), gen[g].Data());
         TFile *f = new TFile(in_name);
         for(Int_t m=0; m<metric.size(); m++){
             for(Int_t p=0; p<p_type.size(); p++){
