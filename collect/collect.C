@@ -1,9 +1,16 @@
 
-Int_t collect(){
+Int_t collect(TString field_map){
     #include "../constants.h"
     TString file_stem = "/home/garrettl/projects/rrg-jmammei/garrettl";
 
-    TFile f_out("collect.root", "RECREATE");
+    TString f_out_name;
+    if(field_map=="asym"){
+        f_out_name = "asym/collect.root";
+    }else if(field_map=="sym"){
+        f_out_name = "normal/collect.root";
+    }
+
+    TFile f_out(f_out_name, "RECREATE");
    
     //grouping together the sectors not in ring 5 into actual quartz tiles
     std::vector<std::vector<Int_t>> ring_non5; 
@@ -26,10 +33,18 @@ Int_t collect(){
     };
 
     TF2 *mult = new TF2("mult", "[0]*y", 0.0, 1.0, 0.0, 2000.0); 
+    TString in_name;
 
     //gen defined in constants.h
     for(Int_t g=0; g<gen.size(); g++){
-        TString in_name = Form("%s/current-scan_data/int_data_asym/%s.root", file_stem.Data(), gen[g].Data());
+        if(field_map=="asym"){
+            in_name = Form("%s/current-scan_data/int_data_asym/%s.root", file_stem.Data(), gen[g].Data());
+        }else if(field_map=="sym"){
+            in_name = Form("%s/current-scan_data/int_data/%s.root", file_stem.Data(), gen[g].Data());
+        }else{
+            cout << Form("Error: Invalid field map \"%s\"", field_map.Data()) << endl;
+            break;
+        }
         TFile *f = new TFile(in_name);
         for(Int_t m=0; m<metric.size(); m++){
             for(Int_t p=0; p<p_type.size(); p++){

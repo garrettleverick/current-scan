@@ -140,16 +140,22 @@ for (size_t event=0; event<nEvents; event++){
 
         Bool_t primary_cond;
         Bool_t secondary_cond;
+        Bool_t photon_cond;
+        Bool_t positron_cond;
         if(generator=="beam"){
             iter = find(good_track.begin(), good_track.end(), hit.trid);
             if(iter==good_track.end()){continue;}
             fRate=1.0;
             primary_cond = hit.vz<=-3875 && hit.pid==11;
             secondary_cond = hit.vz>-3875 && hit.pid==11;
+            photon_cond = hit.pid==22;
+            positron_cond = hit.pid==-11;
         } else{
             iter = find(good_track.begin(), good_track.end(), hit.trid);
             primary_cond = hit.trid<=prim_track;
             secondary_cond = hit.trid>prim_track && hit.pid==11;
+            photon_cond = hit.trid>prim_track && hit.pid==22;
+            positron_cond = hit.trid>prim_track && hit.pid==-11;
             if(iter==good_track.end() && not primary_cond){continue;}
         }
 /*        
@@ -168,8 +174,8 @@ for (size_t event=0; event<nEvents; event++){
             {"all", 1},
             {"primary", primary_cond},
             {"electron", secondary_cond},
-            {"positron", hit.trid>prim_track && hit.pid==-11},
-            {"photon", hit.trid>prim_track && hit.pid==22},
+            {"positron", positron_cond},
+            {"photon", photon_cond},
             {"secondary_woph", hit.trid>prim_track && hit.pid!=22},
             {"secondary", hit.trid>prim_track},
             {"other", hit.trid>prim_track && hit.pid!=11 && hit.pid!=-11 && hit.pid!=22}

@@ -1,5 +1,5 @@
 
-int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vector<Int_t> colour, std::vector<Int_t> m_style, TFile *f1, TFile *f2, TCanvas *c, std::vector<Double_t> scale){
+int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vector<Int_t> colour, std::vector<Int_t> m_style, TFile *f1, TFile *f2, TCanvas *c, std::vector<Double_t> scale, TString field_map, TString out_dir){
  
     TMultiGraph *mg = new TMultiGraph(); 
 
@@ -10,16 +10,16 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
     std::vector<std::vector<std::vector<TString>>> graphs;
     //graphs.push_back({{list of gen}, {list of p_type}, {list of p_nrg}, {title}, {scale}, {sum_mode=1}}); is the format for sum mode 1
     //graphs.push_back({{list of names}, {}, {}, {title}, {scale}, {sum_mode=2}}); is the format for sum mode 2
-    graphs.push_back({{"moller"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"moller e-, >1MeV"}, {"1"}, {"1"}});
-    graphs.push_back({{"elastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"elastic ep e-, >1MeV"}, {"1"}, {"1"}});
-    graphs.push_back({{"inelastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"inelastic ep e-, >1MeV"}, {"10"}, {"1"}});
+    //graphs.push_back({{"moller"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"moller e-, >1MeV"}, {"1"}, {"1"}});
+    //graphs.push_back({{"elastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"elastic ep e-, >1MeV"}, {"1"}, {"1"}});
+    //graphs.push_back({{"inelastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"inelastic ep e-, >1MeV"}, {"1"}, {"1"}});
     graphs.push_back({{"moller", "elastic", "inelastic"}, {"electron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys secondary e-, >1MeV"}, {"100"}, {"1"}});
     graphs.push_back({{"moller", "elastic", "inelastic"}, {"photon"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys photon, >1MeV"}, {"1"}, {"1"}});
     graphs.push_back({{"moller", "elastic", "inelastic"}, {"positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys e+, >1MeV"}, {"100"}, {"1"}});
-    graphs.push_back({{"beam"}, {"electron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam secondary e-, >1MeV"}, {"100"}, {"1"}});
+    graphs.push_back({{"beam"}, {"electron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam secondary e-, >1MeV"}, {"10"}, {"1"}});
     graphs.push_back({{"beam"}, {"photon"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam photon, >1MeV"}, {"1"}, {"1"}});
-    graphs.push_back({{"beam"}, {"positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam e+, >1MeV"}, {"100"}, {"1"}});
-    graphs.push_back({{"moller", "elastic", "inelastic"}, {"primary", "electron", "photon", "positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"sum of all, >1MeV"}, {"1"}, {"1"}});
+    graphs.push_back({{"beam"}, {"positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam e+, >1MeV"}, {"10"}, {"1"}});
+    //graphs.push_back({{"moller", "elastic", "inelastic"}, {"primary", "electron", "photon", "positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"sum of all, >1MeV"}, {"1"}, {"1"}});
 
     TString title;
     TGraphErrors *g1;
@@ -87,7 +87,18 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
                 }
             }
         }
-       
+
+        Double_t diff;
+        for(Int_t test=0; test<y_val.size(); test++){
+            if(y_val[test]<=0){
+                y_val[test] = 1e-5;
+            }
+            if(y_val[test]-y_err[test]<=1e-5){
+                diff = y_val[test]-y_err[test];
+                y_err[test] = y_err[test]-abs(diff)-1e-5; 
+            }
+        }
+
         //name the graphs for the legend
         TGraphErrors *g_out = new TGraphErrors(scale.size(), &scale[0], &y_val[0], &scale_err[0], &y_err[0]);
         title = Form("%s X %s", graphs[i][3][0].Data(), graphs[i][4][0].Data());
@@ -98,32 +109,56 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
         mg->Add(g_out);
     
     }
-                        
-    mg->SetTitle(Form("%s vs Scale, Septant: %d, Sector: %d, Ring: %d; Magnetic Field Scaling Factor; Rate [GHz]", metric.Data(), septant, sector, ring)); 
+    
+    TString out_name;
+    TString short_name = Form("%s_%d_%d_%d", metric.Data(), septant, sector, ring);
+    if(field_map=="asym"){    
+        mg->SetTitle(Form("%s vs Scale, Asymmetric Map, Septant: %d, Sector: %d, Ring: %d; Magnetic Field Scaling Factor; Rate [GHz]", metric.Data(), septant, sector, ring)); 
+        out_name = Form("asym/%s/%s.png", out_dir.Data(), short_name.Data());
+    }else if(field_map=="sym"){
+        mg->SetTitle(Form("%s vs Scale, Symmetric Map, Septant: %d, Sector: %d, Ring: %d; Magnetic Field Scaling Factor; Rate [GHz]", metric.Data(), septant, sector, ring)); 
+        out_name = Form("normal/%s/%s.png", out_dir.Data(), short_name.Data());
+    }
+   
+    gPad->SetLogy(); 
+//    mg->SetMinimum(0.001);
+//    mg->SetMaximum(100);
+//    c->SetLogy();
+//    mg->SetMinimum(0.001);
     mg->GetXaxis()->CenterTitle(1);
     mg->GetYaxis()->CenterTitle(1);
     mg->GetXaxis()->SetLimits(0.65, 1.35);
     mg->Draw("AP");
-    
-    TString out_name = Form("%s_%d_%d_%d", metric.Data(), septant, sector, ring);
+
 
     c->Update(); 
-    c->BuildLegend(0.7, 0.1, 0.9, 0.3);
-    c->Print(Form("current_scan_by_type/%s.png", out_name.Data())); //make sure destniiation already exists
+    c->BuildLegend(0.7, 0.5, 1, 0.9);
+    c->Print(Form("%s", out_name.Data())); //make sure destniiation already exists
 
 //    f_out.cd();
-    mg->Write(out_name);
-    c->Write(Form("c_%s", out_name.Data()));
+    mg->Write(short_name);
+    c->Write(Form("c_%s", short_name.Data()));
     return 0;
 }
 
 
 
-int multi_g_add(){
+int multi_g_add(TString field_map, TString out_dir){
     #include "../constants.h"
-    TFile *f1 = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/collect.root");
+    TString f1_name, f_out_name;
+    if(field_map=="asym"){    
+        f1_name = "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/asym/collect.root";
+        f_out_name = "asym/multi_g_add.root";
+    }else if(field_map=="sym"){
+        f1_name = "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/normal/collect.root";
+        f_out_name = "normal/multi_g_add.root";
+    }else{
+        cout << Form("Error: %s is an invalid field map.") << endl;
+    }
+    
+    TFile *f1 = new TFile(f1_name);
     TFile *f2 = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/mag_over10M/collect3.root");
-    TFile f_out("multi_g_add.root", "RECREATE");   
+    TFile f_out(f_out_name, "RECREATE");   
     
     std::vector<Int_t> colour = {1, 2, 3, 4, 6, 46, 7, 8, 9, 32};
     std::vector<Int_t> m_style = {20, 21, 22, 23, 29, 33, 43, 116, 34, 121};
@@ -138,11 +173,11 @@ int multi_g_add(){
             for(Int_t m=0; m<n_ring+1; m++){
                 if(m!=5 && m!=0){
                     for(Int_t k=0; k<n_not_sector5+1; k++){
-                        plot_save(metric[l], j+1, k, m, colour, m_style, f1, f2, c, scale);
+                        plot_save(metric[l], j+1, k, m, colour, m_style, f1, f2, c, scale, field_map, out_dir);
                     }
                 } else{
                     for(Int_t k=0; k<n_sector+1; k++){//swtich this to 0 once formatting corected
-                        plot_save(metric[l], j+1, k, m, colour, m_style, f1, f2, c, scale);
+                        plot_save(metric[l], j+1, k, m, colour, m_style, f1, f2, c, scale, field_map, out_dir);
                     }
                 } 
             }
