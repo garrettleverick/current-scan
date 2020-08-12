@@ -5,9 +5,11 @@ Int_t collect(TString field_map){
 
     TString f_out_name;
     if(field_map=="asym"){
+        gSystem->Exec("mkdir -p asym");
         f_out_name = "asym/collect.root";
     }else if(field_map=="sym"){
-        f_out_name = "normal/collect.root";
+        gSystem->Exec("mkdir -p sym");
+        f_out_name = "sym/collect.root";
     }
 
     TFile f_out(f_out_name, "RECREATE");

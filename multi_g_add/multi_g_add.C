@@ -5,21 +5,16 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
 
     Int_t sum_mode;
     //sum mode 1 is a summation over all listed energies, types, and generators in an entry of graphs
-    //sum mode 2 is a more specific summation, only choosing specific generators, types, and energies
+    //sum mode 2 is a more specific summation, only choosing specific plots (generators, types, and energies)
+    //placing a 2_ in front of the generator name will allow you to plot from a second file
     
     std::vector<std::vector<std::vector<TString>>> graphs;
     //graphs.push_back({{list of gen}, {list of p_type}, {list of p_nrg}, {title}, {scale}, {sum_mode=1}}); is the format for sum mode 1
     //graphs.push_back({{list of names}, {}, {}, {title}, {scale}, {sum_mode=2}}); is the format for sum mode 2
-    //graphs.push_back({{"moller"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"moller e-, >1MeV"}, {"1"}, {"1"}});
-    //graphs.push_back({{"elastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"elastic ep e-, >1MeV"}, {"1"}, {"1"}});
-    //graphs.push_back({{"inelastic"}, {"primary"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"inelastic ep e-, >1MeV"}, {"1"}, {"1"}});
-    graphs.push_back({{"moller", "elastic", "inelastic"}, {"electron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys secondary e-, >1MeV"}, {"100"}, {"1"}});
-    graphs.push_back({{"moller", "elastic", "inelastic"}, {"photon"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys photon, >1MeV"}, {"1"}, {"1"}});
-    graphs.push_back({{"moller", "elastic", "inelastic"}, {"positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys e+, >1MeV"}, {"100"}, {"1"}});
-    graphs.push_back({{"beam"}, {"electron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam secondary e-, >1MeV"}, {"10"}, {"1"}});
     graphs.push_back({{"beam"}, {"photon"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam photon, >1MeV"}, {"1"}, {"1"}});
-    graphs.push_back({{"beam"}, {"positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam e+, >1MeV"}, {"10"}, {"1"}});
-    //graphs.push_back({{"moller", "elastic", "inelastic"}, {"primary", "electron", "photon", "positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"sum of all, >1MeV"}, {"1"}, {"1"}});
+    //graphs.push_back({{"beam"}, {"positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam e+, >1MeV"}, {"1"}, {"1"}});
+    graphs.push_back({{"moller", "elastic", "inelastic"}, {"photon"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys photon, >1MeV"}, {"1"}, {"1"}});
+    //graphs.push_back({{"moller", "elastic", "inelastic"}, {"positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys e+, >1MeV"}, {"1"}, {"1"}});
 
     TString title;
     TGraphErrors *g1;
@@ -88,6 +83,8 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
             }
         }
 
+        
+/*      //attemp at plotting using a log scale
         Double_t diff;
         for(Int_t test=0; test<y_val.size(); test++){
             if(y_val[test]<=0){
@@ -98,8 +95,8 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
                 y_err[test] = y_err[test]-abs(diff)-1e-5; 
             }
         }
-
-        //name the graphs for the legend
+*/
+        //name the graphs for the legend and give them a marker style and colour
         TGraphErrors *g_out = new TGraphErrors(scale.size(), &scale[0], &y_val[0], &scale_err[0], &y_err[0]);
         title = Form("%s X %s", graphs[i][3][0].Data(), graphs[i][4][0].Data());
         g_out->SetTitle(title);
@@ -117,14 +114,10 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
         out_name = Form("asym/%s/%s.png", out_dir.Data(), short_name.Data());
     }else if(field_map=="sym"){
         mg->SetTitle(Form("%s vs Scale, Symmetric Map, Septant: %d, Sector: %d, Ring: %d; Magnetic Field Scaling Factor; Rate [GHz]", metric.Data(), septant, sector, ring)); 
-        out_name = Form("normal/%s/%s.png", out_dir.Data(), short_name.Data());
+        out_name = Form("sym/%s/%s.png", out_dir.Data(), short_name.Data());
     }
    
-    gPad->SetLogy(); 
-//    mg->SetMinimum(0.001);
-//    mg->SetMaximum(100);
-//    c->SetLogy();
-//    mg->SetMinimum(0.001);
+    //gPad->SetLogy(); 
     mg->GetXaxis()->CenterTitle(1);
     mg->GetYaxis()->CenterTitle(1);
     mg->GetXaxis()->SetLimits(0.65, 1.35);
@@ -146,15 +139,10 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
 int multi_g_add(TString field_map, TString out_dir){
     #include "../constants.h"
     TString f1_name, f_out_name;
-    if(field_map=="asym"){    
-        f1_name = "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/asym/collect.root";
-        f_out_name = "asym/multi_g_add.root";
-    }else if(field_map=="sym"){
-        f1_name = "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/normal/collect.root";
-        f_out_name = "normal/multi_g_add.root";
-    }else{
-        cout << Form("Error: %s is an invalid field map.") << endl;
-    }
+    TString file_stem = "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/"; 
+    f1_name = Form("%s%s/good_e.root", file_stem.Data(), field_map.Data());
+    f_out_name = Form("%s%s/multi_g_add.root", file_stem.Data(), field_map.Data());
+    gSystem->Exec(Form("mkdir -p %s%s/%s", file_stem.Data(), field_map.Data(), out_dir.Data()));
     
     TFile *f1 = new TFile(f1_name);
     TFile *f2 = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/mag_over10M/collect3.root");
@@ -176,7 +164,7 @@ int multi_g_add(TString field_map, TString out_dir){
                         plot_save(metric[l], j+1, k, m, colour, m_style, f1, f2, c, scale, field_map, out_dir);
                     }
                 } else{
-                    for(Int_t k=0; k<n_sector+1; k++){//swtich this to 0 once formatting corected
+                    for(Int_t k=0; k<n_sector+1; k++){
                         plot_save(metric[l], j+1, k, m, colour, m_style, f1, f2, c, scale, field_map, out_dir);
                     }
                 } 

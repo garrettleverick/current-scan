@@ -1,13 +1,15 @@
 
-Int_t one_canvas(){
+Int_t one_canvas(TString out_dir){
     
     #include "../constants.h"
+
+    gSystem->Exec(Form("mkdir -p %s", out_dir.Data()));
 
     TCanvas *c = new TCanvas("c", "c", 1400, 600);
     TCanvas *c1;
     TCanvas *c2;
 
-    TFile *f1 = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/normal/multi_g_add.root");
+    TFile *f1 = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/sym/multi_g_add.root");
     TFile *f2 = new TFile("/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/asym/multi_g_add.root");
 
     for(Int_t i=0; i<metric.size(); i++){
@@ -26,7 +28,7 @@ Int_t one_canvas(){
                         c->cd(2);
                         c2->DrawClonePad();
 
-                        c->Print(Form("current_scan_by_type/%s.png", canvas_name(2, canvas_name.Length()-1).Data()));
+                        c->Print(Form("%s/%s.png", out_dir.Data(), canvas_name(2, canvas_name.Length()-1).Data()));
                     }
                 } else{
                     for(Int_t k=0; k<n_sector+1; k++){//swtich this to 0 once formatting corected
@@ -41,7 +43,7 @@ Int_t one_canvas(){
                         c->cd(2);
                         c2->DrawClonePad();
                         
-                        c->Print(Form("current_scan_by_type/%s.png", canvas_name(2, canvas_name.Length()-1).Data()));
+                        c->Print(Form("%s/%s.png", out_dir.Data(), canvas_name(2, canvas_name.Length()-1).Data()));
                     }
                 }
             }
