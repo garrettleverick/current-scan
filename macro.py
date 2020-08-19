@@ -16,7 +16,8 @@ parser.add_argument("-o", dest="out_dir", action="store", required=True, help="c
 parser.add_argument("-g", dest="gen", action= "store", required=False, default="moller",  help="choose generator to use. Options are moller, elastic, inelastic, beam, etc.")
 parser.add_argument("--time", dest="time", action= "store", required= False, default= "00:15:00", help= "provide the estimated run time. Ex: \"00:25:00\". Usually it is 10 minutes for 1000 moller events.")
 parser.add_argument("-r", dest="run_range", action = "store", required=False, default="1", help="provide run range. Example: \"2-5\"")
-parser.add_argument("--scale", dest="scale", action= "store", required= True, default= "00:15:00", help= "provide the scale for directory purposes. Ex: \"1.225\"")
+parser.add_argument("--scale", dest="scale", action= "store", required= True, help= "provide the scale for directory purposes. Ex: \"1.225\"")
+parser.add_argument("--acpt", dest="acpt", action= "store", required= True, help= "provide the acceptance angle or radius for stitching. Ex: \"30 or 0.007\"")
 
 
 args=parser.parse_args()
@@ -60,7 +61,7 @@ jsubf.write("cp "+args.home+"/* $TMPDIR\n")
 jsubf.write("cp "+args.home+"/../reroot $TMPDIR\n")
 jsubf.write("cp "+full_src+"/${FILE[${SLURM_ARRAY_TASK_ID}-1]} $TMPDIR\n")
 jsubf.write("echo \"Current working directory is `pwd`\"\n")
-jsubf.write("./reroot -q -b analyse.C\"(\\\"${FILE[${SLURM_ARRAY_TASK_ID}-1]}\\\",\\\"analysed_${FILE[${SLURM_ARRAY_TASK_ID}-1]}\\\", \\\""+args.gen+"\\\")\"\n")
+jsubf.write("./reroot -q -b analyse.C\"(\\\"${FILE[${SLURM_ARRAY_TASK_ID}-1]}\\\",\\\"analysed_${FILE[${SLURM_ARRAY_TASK_ID}-1]}\\\", \\\""+args.gen+"\\\", "+args.acpt+")\"\n")
 jsubf.write("mv analysed_${FILE[${SLURM_ARRAY_TASK_ID}-1]} "+full_out+"\n")
 jsubf.write("echo \"Program remoll finished with exit code $? at: `date`\"\n")
 jsubf.close()

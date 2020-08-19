@@ -9,7 +9,7 @@ import argparse
 import glob
 
 parser = argparse.ArgumentParser(description="Submit array jobs to GREX.")
-parser.add_argument("--home", dest="home", action="store", required= False, default="/home/jmammei/REMOLL/analysis/rate")
+parser.add_argument("--home", dest="home", action="store", required= False, default="/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/int_rate")
 parser.add_argument("-j", dest="jsub_dir", action="store", required=False, default="", help="numerate the jsub script if submitting the same job type again")
 parser.add_argument("-o", dest="out_dir", action="store", required=True, help="choose where to create the jsub, tmp, and out directories")
 parser.add_argument("-g", dest="gen", action="store", required=True, help="choose the generator")

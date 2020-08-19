@@ -1,6 +1,6 @@
 using namespace ROOT;
 
-int analyse(TString source, TString out, TString generator){
+int analyse(TString source, TString out, TString generator, Double_t acceptance){
 
 //the particle type and energy partitions are stored in constants.h
 #include "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/constants.h"
@@ -76,7 +76,6 @@ std::vector<remollGenericDetectorHit_t>  *fHit=0;
 T.SetBranchAddress("ev", &fEvent); //getting (the locations of) fEvent, fHit, and fRate from raw data. An event is a stack of hits
 T.SetBranchAddress("hit", &fHit);
 T.SetBranchAddress("rate", &fRate);
-        
 
 
 Int_t prim_track=0; // maximum track of primary, we can't tell which moller e- is the original so they are both given trid 2
@@ -87,7 +86,7 @@ if(generator=="moller"){
 }
 
 //Initialise variables for processing the data
-Float_t acceptance_rad = 30; //mm
+Float_t acceptance_rad = 22; //mm
 std::vector<Int_t> good_track; 
 //^ is where tracks we want to keep are stored. The first loop finds the good tracks, the second loop find the hits on the main detector with said tracks
 Int_t display_percent = 1;
@@ -109,20 +108,20 @@ for (size_t event=0; event<nEvents; event++){
     if(generator=="beam"){
         for(size_t k=0; k<fHit->size(); k++){
             remollGenericDetectorHit_t hit = fHit->at(k);
-            if(hit.det!=27){continue;} //ignore if hit is not at det 27 (z = 750)
+            if(hit.det!=26){continue;} //ignore if hit is not at det 27 (z = 750)
             Float_t rad = hit.r;
-//            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.pz);
-            if(find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
+            Float_t theta = abs(atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.pz));
+            if(theta<acceptance && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
                 good_track.push_back(hit.trid);
             }
         }
     } else{
         for(size_t k=0; k<fHit->size(); k++){
             remollGenericDetectorHit_t hit = fHit->at(k);
-            if(hit.det!=27){continue;}
+            if(hit.det!=26){continue;}
             Float_t rad = hit.r;
-//            Float_t theta = atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.pz);
-            if(find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
+            Float_t theta = abs(atan(sqrt(hit.px*hit.px+hit.py*hit.py)/hit.pz));
+            if(theta>=acceptance && find(good_track.begin(), good_track.end(), hit.trid) == good_track.end()){
                 good_track.push_back(hit.trid);
             }
         }
@@ -153,22 +152,12 @@ for (size_t event=0; event<nEvents; event++){
         } else{
             iter = find(good_track.begin(), good_track.end(), hit.trid);
             primary_cond = hit.trid<=prim_track;
-            secondary_cond = hit.trid>prim_track && hit.pid==11;
-            photon_cond = hit.trid>prim_track && hit.pid==22;
-            positron_cond = hit.trid>prim_track && hit.pid==-11;
+            secondary_cond = hit.trid>prim_track && hit.pid==11; 
+            photon_cond = hit.pid==22;
+            positron_cond = hit.pid==-11;
             if(iter==good_track.end() && not primary_cond){continue;}
         }
-/*        
-        if(generator=="beam"){
-            fRate=1.0;
-        }
-
-        if(generator=="beam"){
-            primary_cond = hit.vz<=-3875 && hit.pid==11;
-        } else{
-            primary_cond = hit.trid<=prim_track;
-        }
-*/
+        
         //below are maps which evaluate the particle type and energy, these maps are called when filling the histograms
         std::map<TString, Bool_t> hit_type = {
             {"all", 1},
@@ -176,9 +165,9 @@ for (size_t event=0; event<nEvents; event++){
             {"electron", secondary_cond},
             {"positron", positron_cond},
             {"photon", photon_cond},
-            {"secondary_woph", hit.trid>prim_track && hit.pid!=22},
-            {"secondary", hit.trid>prim_track},
-            {"other", hit.trid>prim_track && hit.pid!=11 && hit.pid!=-11 && hit.pid!=22}
+            //{"secondary_woph", hit.trid>prim_track && hit.pid!=22},
+            //{"secondary", hit.trid>prim_track},
+            //{"other", hit.trid>prim_track && hit.pid!=11 && hit.pid!=-11 && hit.pid!=22}
         };
 
         std::map<TString, Bool_t> hit_nrg = {

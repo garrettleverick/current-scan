@@ -16,15 +16,15 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
     graphs.push_back({{"moller", "elastic", "inelastic"}, {"photon"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys photon, >1MeV"}, {"1"}, {"1"}});
     //graphs.push_back({{"moller", "elastic", "inelastic"}, {"positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys e+, >1MeV"}, {"1"}, {"1"}});
 
-    TString title;
+    TString title; //will store title given above
     TGraphErrors *g1;
 
-    Double_t * tmp_y_val;
+    Double_t * tmp_y_val; //temporarily store graph's value for summation
     Double_t * tmp_y_err;
     std::vector<Double_t> y_val(scale.size(), 0.0);
     std::vector<Double_t> y_err_sq(scale.size(), 0.0);
     std::vector<Double_t> y_err(scale.size(), 0.0);
-    std::vector<Double_t> scale_err(scale.size(), 0.0);    
+    std::vector<Double_t> scale_err(scale.size(), 0.0);
     
     for(Int_t i=0; i<graphs.size(); i++){ //loop over things on same TMultiGraph
         std::fill(y_val.begin(), y_val.end(), 0.0);
@@ -84,7 +84,7 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
         }
 
         
-/*      //attemp at plotting using a log scale
+/*      //attemp at plotting using a log scale (requires values/errors >0)
         Double_t diff;
         for(Int_t test=0; test<y_val.size(); test++){
             if(y_val[test]<=0){
@@ -123,7 +123,6 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
     mg->GetXaxis()->SetLimits(0.65, 1.35);
     mg->Draw("AP");
 
-
     c->Update(); 
     c->BuildLegend(0.7, 0.5, 1, 0.9);
     c->Print(Form("%s", out_name.Data())); //make sure destniiation already exists
@@ -136,7 +135,7 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
 
 
 
-int multi_g_add(TString field_map, TString out_dir){
+int swiss_multi_g(TString field_map, TString out_dir){
     #include "../constants.h"
     TString f1_name, f_out_name;
     TString file_stem = "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/"; 
@@ -162,7 +161,7 @@ int multi_g_add(TString field_map, TString out_dir){
                 if(m!=5 && m!=0){
                     for(Int_t k=0; k<n_not_sector5+1; k++){
                         plot_save(metric[l], j+1, k, m, colour, m_style, f1, f2, c, scale, field_map, out_dir);
-                    }
+                        }
                 } else{
                     for(Int_t k=0; k<n_sector+1; k++){
                         plot_save(metric[l], j+1, k, m, colour, m_style, f1, f2, c, scale, field_map, out_dir);
@@ -170,12 +169,10 @@ int multi_g_add(TString field_map, TString out_dir){
                 } 
             }
         }
-    }
+    }   
+
 
     return 0;
 
 }
-
-
-
 
