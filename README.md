@@ -1,3 +1,6 @@
+# Main branch is all-anglecut
+
+
 # Magnet Current Scan Analysis
 ### Author: Garrett Leverick
 ### Repository created: 03 July 2020
