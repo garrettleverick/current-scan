@@ -11,9 +11,9 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
     std::vector<std::vector<std::vector<TString>>> graphs;
     //graphs.push_back({{list of gen}, {list of p_type}, {list of p_nrg}, {title}, {scale}, {sum_mode=1}}); is the format for sum mode 1
     //graphs.push_back({{list of names}, {}, {}, {title}, {scale}, {sum_mode=2}}); is the format for sum mode 2
-    graphs.push_back({{"beam"}, {"photon"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam photon, >1MeV"}, {"1"}, {"1"}});
-    //graphs.push_back({{"beam"}, {"positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"beam e+, >1MeV"}, {"1"}, {"1"}});
-    graphs.push_back({{"moller", "elastic", "inelastic"}, {"photon"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys photon, >1MeV"}, {"1"}, {"1"}});
+    graphs.push_back({{"moller"}, {"electron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"moller electron, >1MeV"}, {"1"}, {"1"}});
+    graphs.push_back({{"elastic"}, {"electron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"elastic electron, >1MeV"}, {"1"}, {"1"}});
+    graphs.push_back({{"inelastic"}, {"electron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"inelastic electron, >1MeV"}, {"1"}, {"1"}});
     //graphs.push_back({{"moller", "elastic", "inelastic"}, {"positron"}, {"1_to_10", "10_to_100", "100_to_1000", "gte_1000"}, {"phys e+, >1MeV"}, {"1"}, {"1"}});
 
     TString title; //will store title given above
@@ -135,7 +135,7 @@ int plot_save(TString metric, Int_t septant, Int_t sector, Int_t ring, std::vect
 
 
 
-int swiss_multi_g(TString field_map, TString out_dir){
+int multi_g_add(TString field_map, TString out_dir){
     #include "../constants.h"
     TString f1_name, f_out_name;
     TString file_stem = "/home/garrettl/projects/rrg-jmammei/garrettl/analysis/current-scan/"; 
