@@ -1,7 +1,7 @@
 # Magnet Current Scan Analysis
 ### Author: Garrett Leverick
 ### Repository created: 03 July 2020
-### README Last Edited: 25 July 2020
+### README Last Edited: 25 Aug 2020
 Description: This repository stores analysis code for a magnet current scan study for the spectrometer to be used in the moller experiment at Jefferson Lab.
 
 ### File Description 
